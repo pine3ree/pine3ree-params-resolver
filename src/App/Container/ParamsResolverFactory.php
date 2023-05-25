@@ -6,7 +6,7 @@
  * @subpackage p3im-app
  */
 
-namespace App\Action;
+namespace App\Container;
 
 use App\Container\ParamsResolver;
 use Psr\Container\ContainerInterface;
