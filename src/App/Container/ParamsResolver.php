@@ -29,11 +29,11 @@ use function method_exists;
 use function sprintf;
 
 /**
- * Params is a method/function argument resolver
+ * ParamsResolver is a method/function argument resolver
  *
- * Argument are looked-up by name ore type-hinted class-name
+ * Argument are looked-up by name or type-hinted class-name.
  * The search starts inside the injected default parameters, then in the container
- * and then as a last resource a default value, when provided,  will be used.
+ * and then as a last resource a default value, if provided, will be used.
  *
  */
 class ParamsResolver
@@ -62,7 +62,7 @@ class ParamsResolver
      * Resolve a callable arguments using given params or retrieving them from the container
      *
      * @param string|array|object $callable
-     * @param array $params
+     * @param array $params Resolved params indexed by fqcn/service-ID
      * @return array
      * @throws RuntimeException
      */
