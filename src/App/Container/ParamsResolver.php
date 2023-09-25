@@ -44,8 +44,7 @@ class ParamsResolver
     private ContainerInterface $container;
 
     /**
-     * A map (action-method to Class::methodName) of methods that have already
-     * been resolved
+     * A cache of resolved reflection parameters indexed by callable name
      *
      * @var ReflectionParameter[]
      */
