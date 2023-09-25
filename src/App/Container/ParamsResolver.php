@@ -40,8 +40,6 @@ class ParamsResolver
 {
     /**
      * The container used to resolve the parameters that represent dependencies
-     *
-     * @var Container
      */
     private ContainerInterface $container;
 
