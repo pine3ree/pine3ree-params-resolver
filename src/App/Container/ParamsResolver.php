@@ -140,7 +140,7 @@ class ParamsResolver
             } else {
                 throw new RuntimeException(sprintf(
                     "Unable to resolve the parameter with name `%s` for given callable %s !",
-                    $rp->getName(),
+                    $rp_name,
                     json_encode($callable)
                 ));
             }
