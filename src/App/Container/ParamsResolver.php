@@ -98,6 +98,8 @@ class ParamsResolver
             ));
         }
 
+        $container = $this->container;
+
         // Build the arguments for the provided callable
         $args = [];
         foreach ($__r_params as $rp) {
@@ -110,18 +112,17 @@ class ParamsResolver
                     // Try injected params first
                     if (isset($params[$rp_fqcn])) {
                         $args[] = $params[$rp_fqcn];
-                    } elseif ($rp_fqcn === ContainerInterface::class || $rp_fqcn === get_class($this->container)) {
-                        $args[] = $this->container;
-                    } elseif ($this->container->has($rp_fqcn)) {
-                        $args[] = $this->container->get($rp_fqcn);
+                    } elseif ($rp_fqcn === ContainerInterface::class || $rp_fqcn === get_class($container)) {
+                        $args[] = $container;
+                    } elseif ($container->has($rp_fqcn)) {
+                        $args[] = $container->get($rp_fqcn);
                     } else {
                         // Try instantating with argument-less constructor call
                         try {
                             $args[] = new $rp_fqcn();
                         } catch (Throwable $ex) {
                             throw new RuntimeException(sprintf(
-                                "Unable to create an instance for the parameter with name `%s` for given callable %s !",
-                                $rp_name,
+                                "Unable to instantiate an object for the argument with name `{$rp_name}` for given callable %s!",
                                 json_encode($callable)
                             ));
                         }
@@ -134,14 +135,13 @@ class ParamsResolver
                 }
             } elseif (isset($params[$rp_name])) {
                 $args[] = $params[$rp_name];
-            } elseif ($this->container->has($rp_name)) {
-                $args[] = $this->container->get($rp_name);
+            } elseif ($container->has($rp_name)) {
+                $args[] = $container->get($rp_name);
             } elseif ($rp->isDefaultValueAvailable()) {
                 $args[] = $rp->getDefaultValue();
             } else {
                 throw new RuntimeException(sprintf(
-                    "Unable to resolve the parameter with name `%s` for given callable %s !",
-                    $rp_name,
+                    "Unable to resolve the argument with name `{$rp_name}` for given callable %s!",
                     json_encode($callable)
                 ));
             }
