@@ -154,6 +154,11 @@ class ParamsResolver
         return $this->container;
     }
 
+    /**
+     * @internal Used for debug
+     *
+     * @return array
+     */
     public static function getStaticDebugInfo(): array
     {
         return [
