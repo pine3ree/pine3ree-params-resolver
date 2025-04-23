@@ -110,7 +110,7 @@ class ParamsResolver
             }
             // FQCN type-hinted arguments
             if (isset($rp_fqcn)
-                && (class_exists($rp_fqcn, true) || interface_exists($rp_fqcn, true))
+                && (interface_exists($rp_fqcn, true) || class_exists($rp_fqcn, true))
             ) {
                 // Try injected params first
                 if (isset($params[$rp_fqcn])) {
