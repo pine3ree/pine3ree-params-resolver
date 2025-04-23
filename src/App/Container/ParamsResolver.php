@@ -14,6 +14,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionNamedType;
 use RuntimeException;
+use Throwable;
 
 use function array_keys;
 use function class_exists;
@@ -122,7 +123,7 @@ class ParamsResolver
                     // Try instantating with argument-less constructor call
                     try {
                         $args[] = new $rp_fqcn();
-                    } catch (Exception $ex) {
+                    } catch (Throwable $ex) {
                         throw new RuntimeException(sprintf(
                             "Unable to create an instance for the parameter with name `%s` for given callable %s !",
                             $rp->getName(),
