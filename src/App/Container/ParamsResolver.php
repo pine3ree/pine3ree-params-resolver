@@ -105,31 +105,32 @@ class ParamsResolver
             $rp_type = $rp->getType();
             if ($rp_type instanceof ReflectionNamedType && !$rp_type->isBuiltin()) {
                 $rp_fqcn = $rp_type->getName();
-            } else {
-                $rp_fqcn = null;
-            }
-            // FQCN type-hinted arguments
-            if (isset($rp_fqcn)
-                && (interface_exists($rp_fqcn, true) || class_exists($rp_fqcn, true))
-            ) {
-                // Try injected params first
-                if (isset($params[$rp_fqcn])) {
-                    $args[] = $params[$rp_fqcn];
-                } elseif ($rp_fqcn === ContainerInterface::class || $rp_fqcn === get_class($this->container)) {
-                    $args[] = $this->container;
-                } elseif ($this->container->has($rp_fqcn)) {
-                    $args[] = $this->container->get($rp_fqcn);
-                } else {
-                    // Try instantating with argument-less constructor call
-                    try {
-                        $args[] = new $rp_fqcn();
-                    } catch (Throwable $ex) {
-                        throw new RuntimeException(sprintf(
-                            "Unable to create an instance for the parameter with name `%s` for given callable %s !",
-                            $rp_name,
-                            json_encode($callable)
-                        ));
+                // FQCN type-hinted arguments
+                if (interface_exists($rp_fqcn, true) || class_exists($rp_fqcn, true)) {
+                    // Try injected params first
+                    if (isset($params[$rp_fqcn])) {
+                        $args[] = $params[$rp_fqcn];
+                    } elseif ($rp_fqcn === ContainerInterface::class || $rp_fqcn === get_class($this->container)) {
+                        $args[] = $this->container;
+                    } elseif ($this->container->has($rp_fqcn)) {
+                        $args[] = $this->container->get($rp_fqcn);
+                    } else {
+                        // Try instantating with argument-less constructor call
+                        try {
+                            $args[] = new $rp_fqcn();
+                        } catch (Throwable $ex) {
+                            throw new RuntimeException(sprintf(
+                                "Unable to create an instance for the parameter with name `%s` for given callable %s !",
+                                $rp_name,
+                                json_encode($callable)
+                            ));
+                        }
                     }
+                } else {
+                    throw new RuntimeException(
+                        "`{$rp_fqcn}` is neither a valid interface nor a class name"
+                        . " for given dependency named `{$rp_name}`!",
+                    );
                 }
             } elseif (isset($params[$rp_name])) {
                 $args[] = $params[$rp_name];
