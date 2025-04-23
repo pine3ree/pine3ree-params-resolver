@@ -23,7 +23,6 @@ use function interface_exists;
 use function is_array;
 use function is_object;
 use function is_string;
-use function is_subclass_of;
 use function json_encode;
 use function method_exists;
 use function sprintf;
@@ -115,7 +114,7 @@ class ParamsResolver
                 // Try injected params first
                 if (isset($params[$rp_fqcn])) {
                     $args[] = $params[$rp_fqcn];
-                } elseif ($rp_fqcn === Container::class || is_subclass_of($rp_fqcn, Container::class, true)) {
+                } elseif ($rp_fqcn === ContainerInterface::class || $rp_fqcn === get_class($this->container)) {
                     $args[] = $this->container;
                 } elseif ($this->container->has($rp_fqcn)) {
                     $args[] = $this->container->get($rp_fqcn);
