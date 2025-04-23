@@ -103,7 +103,7 @@ class ParamsResolver
         foreach ($__r_params as $rp) {
             $rp_name = $rp->getName();
             $rp_type = $rp->getType();
-            if ($rp_type instanceof ReflectionNamedType) {
+            if ($rp_type instanceof ReflectionNamedType && !$rp_type->isBuiltin()) {
                 $rp_fqcn = $rp_type->getName();
             } else {
                 $rp_fqcn = null;
