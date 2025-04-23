@@ -126,7 +126,7 @@ class ParamsResolver
                     } catch (Throwable $ex) {
                         throw new RuntimeException(sprintf(
                             "Unable to create an instance for the parameter with name `%s` for given callable %s !",
-                            $rp->getName(),
+                            $rp_name,
                             json_encode($callable)
                         ));
                     }
