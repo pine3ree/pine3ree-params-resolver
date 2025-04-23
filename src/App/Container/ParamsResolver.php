@@ -149,6 +149,11 @@ class ParamsResolver
         return $args;
     }
 
+    /**
+     * @internal Used by internally by dependency injection
+     *
+     * @return array
+     */
     public function getContainer(): ContainerInterface
     {
         return $this->container;
