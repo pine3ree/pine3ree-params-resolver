@@ -22,16 +22,17 @@ use function function_exists;
 use function get_class;
 use function interface_exists;
 use function is_array;
+use function is_callable;
 use function is_object;
 use function is_string;
 use function json_encode;
-use function method_exists;
 use function sprintf;
 
 /**
- * ParamsResolver is a method/function argument resolver
+ * ParamsResolver is a method/function argument resolver that uses either injected
+ * and resolved values or fetch dependencies from the container
  *
- * Argument are looked-up by name or type-hinted class-name.
+ * Parameters are looked-up by type-hinted class/interface-name or by name.
  * The search starts inside the injected default parameters, then in the container
  * and then as a last resource a default value, if provided, will be used.
  *
@@ -58,14 +59,16 @@ class ParamsResolver
     /**
      * Resolve a callable arguments using given params or retrieving them from the container
      *
-     * @param string|array|object $callable
+     * @param string|array|object $callable An object/class method array expression,
+     *      a function or an invokable object. Use ['fqcn', '__construct'] for
+     *      class constructors
      * @param array $resolvedParams Injected resolved params indexed by fqcn/service-ID
      * @return array
      * @throws RuntimeException
      */
     public function resolve($callable, array $resolvedParams = null): array
     {
-        if (is_object($callable) && method_exists($callable, '__invoke')) {
+        if (is_object($callable) && is_callable($callable)) {
             $callable = [$callable, '__invoke'];
         }
 
@@ -100,15 +103,15 @@ class ParamsResolver
 
         $container = $this->container;
 
-        // Build the arguments for the provided callable
+        // Build the arguments for the provided ~callable~
         $args = [];
         foreach ($__r_params as $rp) {
             $rp_name = $rp->getName();
             $rp_type = $rp->getType();
             if ($rp_type instanceof ReflectionNamedType && !$rp_type->isBuiltin()) {
                 $rp_fqcn = $rp_type->getName();
-                // FQCN type-hinted arguments
-                if (interface_exists($rp_fqcn, true) || class_exists($rp_fqcn, true)) {
+                // fqcn/fqin type-hinted arguments
+                if (interface_exists($rp_fqcn) || class_exists($rp_fqcn)) {
                     if (isset($resolvedParams[$rp_fqcn])) {
                         // Try injected/resolved params first
                         $args[] = $resolvedParams[$rp_fqcn];
@@ -121,16 +124,23 @@ class ParamsResolver
                     } elseif ($rp->isDefaultValueAvailable()) {
                         // Dependency with a default value provided
                         $args[] = $rp->getDefaultValue();
-                    } else {
+                    } elseif (class_exists($rp_fqcn)) {
                         // Try instantating with argument-less constructor call
                         try {
                             $args[] = new $rp_fqcn();
                         } catch (Throwable $ex) {
                             throw new RuntimeException(sprintf(
-                                "Unable to instantiate an object for the argument with name `{$rp_name}` for given callable %s!",
+                                "Unable to instantiate an object for the parameter"
+                                . " with name `{$rp_name}` for given callable %s!",
                                 json_encode($callable)
                             ));
                         }
+                    } else {
+                        throw new RuntimeException(sprintf(
+                            "Unable to resolve the dependency parameter with name `{$rp_name}`"
+                            . " for given callable %s!",
+                            json_encode($callable)
+                        ));
                     }
                 } else {
                     throw new RuntimeException(
@@ -146,7 +156,7 @@ class ParamsResolver
                 $args[] = $rp->getDefaultValue();
             } else {
                 throw new RuntimeException(sprintf(
-                    "Unable to resolve the argument with name `{$rp_name}` for given callable %s!",
+                    "Unable to resolve the parameter with name `{$rp_name}` for given callable %s!",
                     json_encode($callable)
                 ));
             }
