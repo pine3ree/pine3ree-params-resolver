@@ -59,7 +59,7 @@ class ParamsResolver
      * Resolve a callable arguments using given params or retrieving them from the container
      *
      * @param string|array|object $callable
-     * @param array $params Resolved params indexed by fqcn/service-ID
+     * @param array $params Injected resolved params indexed by fqcn/service-ID
      * @return array
      * @throws RuntimeException
      */
@@ -109,13 +109,18 @@ class ParamsResolver
                 $rp_fqcn = $rp_type->getName();
                 // FQCN type-hinted arguments
                 if (interface_exists($rp_fqcn, true) || class_exists($rp_fqcn, true)) {
-                    // Try injected params first
                     if (isset($params[$rp_fqcn])) {
+                        // Try injected/resolved params first
                         $args[] = $params[$rp_fqcn];
                     } elseif ($rp_fqcn === ContainerInterface::class || $rp_fqcn === get_class($container)) {
+                        // A container should not be a type-hinted dependency: service-locator anti-pattern
                         $args[] = $container;
                     } elseif ($container->has($rp_fqcn)) {
+                        // Parameter resolved by the container
                         $args[] = $container->get($rp_fqcn);
+                    } elseif ($rp->isDefaultValueAvailable()) {
+                        // Dependency with a default value provided
+                        $args[] = $rp->getDefaultValue();
                     } else {
                         // Try instantating with argument-less constructor call
                         try {
