@@ -59,11 +59,11 @@ class ParamsResolver
      * Resolve a callable arguments using given params or retrieving them from the container
      *
      * @param string|array|object $callable
-     * @param array $params Injected resolved params indexed by fqcn/service-ID
+     * @param array $resolvedParams Injected resolved params indexed by fqcn/service-ID
      * @return array
      * @throws RuntimeException
      */
-    public function resolve($callable, array $params = null): array
+    public function resolve($callable, array $resolvedParams = null): array
     {
         if (is_object($callable) && method_exists($callable, '__invoke')) {
             $callable = [$callable, '__invoke'];
@@ -109,9 +109,9 @@ class ParamsResolver
                 $rp_fqcn = $rp_type->getName();
                 // FQCN type-hinted arguments
                 if (interface_exists($rp_fqcn, true) || class_exists($rp_fqcn, true)) {
-                    if (isset($params[$rp_fqcn])) {
+                    if (isset($resolvedParams[$rp_fqcn])) {
                         // Try injected/resolved params first
-                        $args[] = $params[$rp_fqcn];
+                        $args[] = $resolvedParams[$rp_fqcn];
                     } elseif ($rp_fqcn === ContainerInterface::class || $rp_fqcn === get_class($container)) {
                         // A container should not be a type-hinted dependency: service-locator anti-pattern
                         $args[] = $container;
@@ -138,8 +138,8 @@ class ParamsResolver
                         . " for given dependency named `{$rp_name}`!",
                     );
                 }
-            } elseif (isset($params[$rp_name])) {
-                $args[] = $params[$rp_name];
+            } elseif (isset($resolvedParams[$rp_name])) {
+                $args[] = $resolvedParams[$rp_name];
             } elseif ($container->has($rp_name)) {
                 $args[] = $container->get($rp_name);
             } elseif ($rp->isDefaultValueAvailable()) {
