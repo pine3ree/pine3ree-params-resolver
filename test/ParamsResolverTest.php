@@ -55,7 +55,8 @@ final class ParamsResolverTest extends TestCase
             [DateTimeZone::class, false],
             [DirectoryIterator::class, false],
             ['noexistent', false],
-            [Test::class, false],
+            [TestClass::class, false],
+            [TestTrait::class, false],
         ];
 
         $this->container->method('has')->willReturnMap($hasReturnMap);
@@ -241,6 +242,15 @@ final class ParamsResolverTest extends TestCase
     public function testThatNonInstatiatableClassRaisesException(): void
     {
         $callable = function (TestClass $test): void {};
+
+        $this->expectException(RuntimeException::class);
+
+        $args = $this->resolver->resolve($callable);
+    }
+
+    public function testThatInvalidDependencyParameterTypeRaisesException(): void
+    {
+        $callable = function (TestTrait $test): void {};
 
         $this->expectException(RuntimeException::class);
 
