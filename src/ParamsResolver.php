@@ -14,6 +14,7 @@ use Psr\Container\ContainerInterface;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionNamedType;
+use ReflectionParameter;
 use RuntimeException;
 use Throwable;
 use pine3ree\Container\ParamsResolverInterface;
