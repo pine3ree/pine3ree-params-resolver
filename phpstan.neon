@@ -1,0 +1,11 @@
+parameters:
+    level: max
+    paths:
+        - src
+    fileExtensions:
+        - php
+    ignoreErrors:
+        - '#Parameter \#1 \$object_or_class of function method_exists expects object\|string, array\<int, object\|string\>\|object\|string given#'
+        - '#Parameter \#1 \$function of class ReflectionFunction constructor expects Closure\|string, object\|string given#'
+
+
