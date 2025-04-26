@@ -220,6 +220,15 @@ final class ParamsResolverTest extends TestCase
         self::assertEquals('SOME STRING', $args[0]);
     }
 
+    public function testThatNonExistingFunctionRaisesException(): void
+    {
+        $callable = 'nonexistent';
+
+        $this->expectException(RuntimeException::class);
+
+        $args = $this->resolver->resolve($callable);
+    }
+
     public function testMethod(): void
     {
         $dateTime = new DateTimeImmutable();
