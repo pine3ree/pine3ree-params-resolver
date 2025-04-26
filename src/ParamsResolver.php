@@ -41,7 +41,7 @@ class ParamsResolver implements ParamsResolverInterface
     /**
      * A cache of resolved reflection parameters indexed by function/method name
      *
-     * @var ReflectionParameter[]
+     * @var array<string, ReflectionParameter[]>
      */
     private static $__r_params = [];
 
@@ -158,8 +158,6 @@ class ParamsResolver implements ParamsResolverInterface
 
     /**
      * @internal Used by internally by unit tests
-     *
-     * @return array
      */
     public function getContainer(): ContainerInterface
     {
