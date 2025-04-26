@@ -45,7 +45,7 @@ class ParamsResolver
     private ContainerInterface $container;
 
     /**
-     * A cache of resolved reflection parameters indexed by callable name
+     * A cache of resolved reflection parameters indexed by function/method name
      *
      * @var ReflectionParameter[]
      */
@@ -78,14 +78,15 @@ class ParamsResolver
             $method = $callable[1];
             $class = is_object($object) ? get_class($object) : $object;
             if ($class === Closure::class) {
-                $rf = new ReflectionMethod($object, $method);
-                $__r_params = $rf->getParameters();
+                // Anonymous function reflection parameters are not cached
+                $rm = new ReflectionMethod($object, $method);
+                $__r_params = $rm->getParameters();
             } else {
                 $cache_key = "{$class}::{$method}";
                 $__r_params = self::$__r_params[$cache_key] ?? null;
                 if ($__r_params === null) {
-                    $rf = new ReflectionMethod($object, $method);
-                    self::$__r_params[$cache_key] = $__r_params = $rf->getParameters();
+                    $rm = new ReflectionMethod($object, $method);
+                    self::$__r_params[$cache_key] = $__r_params = $rm->getParameters();
                 }
             }
         } elseif (is_string($callable) && function_exists($callable)) {
@@ -105,6 +106,7 @@ class ParamsResolver
 
         // Build the arguments for the provided ~callable~
         $args = [];
+        /** @var ReflectionParameter $rp */
         foreach ($__r_params as $rp) {
             $rp_name = $rp->getName();
             $rp_type = $rp->getType();
@@ -116,8 +118,8 @@ class ParamsResolver
                         // Try injected/resolved params first
                         $args[] = $resolvedParams[$rp_fqcn];
                     } elseif ($rp_fqcn === ContainerInterface::class || $rp_fqcn === get_class($container)) {
-                        // A container should not be a type-hinted dependency: service-locator anti-pattern,
-                        // but another dependency resolver may need it
+                        // A container should not be a type-hinted dependency (service-locator anti-pattern),
+                        // but another dependency resolver might use it
                         $args[] = $container;
                     } elseif ($container->has($rp_fqcn)) {
                         // Parameter resolved by the container
