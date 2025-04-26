@@ -62,11 +62,12 @@ class ParamsResolver
      * @param string|array|object $callable An object/class method array expression,
      *      a function or an invokable object. Use ['fqcn', '__construct'] for
      *      class constructors
-     * @param array $resolvedParams Injected resolved params indexed by fqcn/service-ID
+     * @param array $resolvedParams Optionally injected resolved params indexed by FQCN/FQIN/container-service-ID
+     * @param ContainerInterface|null $container Optional alternative container for dependency resolution
      * @return array
      * @throws RuntimeException
      */
-    public function resolve($callable, array $resolvedParams = null): array
+    public function resolve($callable, array $resolvedParams = null, ?ContainerInterface $container = null): array
     {
         if (is_object($callable) && is_callable($callable)) {
             $callable = [$callable, '__invoke'];
@@ -102,7 +103,7 @@ class ParamsResolver
             ));
         }
 
-        $container = $this->container;
+        $container = $container ?? $this->container;
 
         // Build the arguments for the provided ~callable~
         $args = [];
@@ -153,10 +154,13 @@ class ParamsResolver
                     );
                 }
             } elseif (isset($resolvedParams[$rp_name])) {
+                // Injected parameter matched by name
                 $args[] = $resolvedParams[$rp_name];
             } elseif ($container->has($rp_name)) {
+                // Injected parameter resolved as container service-id
                 $args[] = $container->get($rp_name);
             } elseif ($rp->isDefaultValueAvailable()) {
+                // Finally try a default parameter, if available
                 $args[] = $rp->getDefaultValue();
             } else {
                 throw new RuntimeException(sprintf(
