@@ -25,10 +25,10 @@ use function function_exists;
 use function get_class;
 use function interface_exists;
 use function is_array;
-use function is_callable;
 use function is_object;
 use function is_string;
 use function json_encode;
+use function method_exists;
 use function sprintf;
 
 class ParamsResolver implements ParamsResolverInterface
@@ -52,7 +52,7 @@ class ParamsResolver implements ParamsResolverInterface
 
     public function resolve($callable, array $resolvedParams = null, ?ContainerInterface $container = null): array
     {
-        if (is_object($callable) && is_callable($callable)) {
+        if (is_object($callable) && method_exists($callable)) {
             $callable = [$callable, '__invoke'];
         }
 
