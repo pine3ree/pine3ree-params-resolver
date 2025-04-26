@@ -6,7 +6,7 @@
  * @author      pine3ree https://github.com/pine3ree
  */
 
-namespace App\Container;
+namespace pine3ree\Container;
 
 use Psr\Container\ContainerInterface;
 

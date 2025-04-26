@@ -6,9 +6,9 @@
  * @author      pine3ree https://github.com/pine3ree
  */
 
-namespace App\Container;
+namespace pine3ree\Container;
 
-use App\Container\ParamsResolverInterface;
+use pine3ree\Container\ParamsResolverInterface;
 use Closure;
 use Psr\Container\ContainerInterface;
 use ReflectionFunction;

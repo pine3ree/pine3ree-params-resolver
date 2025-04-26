@@ -6,9 +6,9 @@
  * @subpackage p3im-app
  */
 
-namespace App\Container;
+namespace pine3ree\Container;
 
-use App\Container\ParamsResolver;
+use pine3ree\Container\ParamsResolver;
 use Psr\Container\ContainerInterface;
 
 class ParamsResolverFactory
