@@ -44,7 +44,7 @@ class ParamsResolver implements ParamsResolverInterface
      *
      * @var array<string, ReflectionParameter[]>
      */
-    private static $__r_params = [];
+    private static $rf_params = [];
 
     public function __construct(ContainerInterface $container)
     {
@@ -66,25 +66,25 @@ class ParamsResolver implements ParamsResolverInterface
             $method = $callable[1];
             $class = is_object($object) ? get_class($object) : $object;
             $cache_key = "{$class}::{$method}";
-            $__r_params = self::$__r_params[$cache_key] ?? null;
-            if ($__r_params === null) {
+            $rf_params = self::$rf_params[$cache_key] ?? null;
+            if ($rf_params === null) {
                 if ($method === '__construct') {
                     $rc = new ReflectionClass($class);
                     $rm = $rc->getConstructor();
                 } else {
                     $rm = new ReflectionMethod($object, $method);
                 }
-                self::$__r_params[$cache_key] = $__r_params = $rm->getParameters();
+                self::$rf_params[$cache_key] = $rf_params = $rm->getParameters();
             }
         } elseif (is_string($callable) && function_exists($callable)) {
-            $__r_params = self::$__r_params[$callable] ?? null;
-            if ($__r_params === null) {
+            $rf_params = self::$rf_params[$callable] ?? null;
+            if ($rf_params === null) {
                 $rf = new ReflectionFunction($callable);
-                self::$__r_params[$callable] = $__r_params = $rf->getParameters();
+                self::$rf_params[$callable] = $rf_params = $rf->getParameters();
             }
         } elseif ($is_object && $callable instanceof Closure) {
             $rf = new ReflectionFunction($callable);
-            $__r_params = $rf->getParameters();
+            $rf_params = $rf->getParameters();
         } else {
             throw new RuntimeException(sprintf(
                 "Cannot fetch a reflection method or function for given callable %s !",
@@ -97,7 +97,7 @@ class ParamsResolver implements ParamsResolverInterface
         // Build the arguments for the provided ~callable~
         $args = [];
         /** @var ReflectionParameter $rp */
-        foreach ($__r_params as $rp) {
+        foreach ($rf_params as $rp) {
             $rp_name = $rp->getName();
             $rp_type = $rp->getType();
             if ($rp_type instanceof ReflectionNamedType && !$rp_type->isBuiltin()) {
@@ -179,6 +179,6 @@ class ParamsResolver implements ParamsResolverInterface
      */
     public static function getCachedReflectionParameters(string $key): ?array
     {
-        return self::$__r_params[$key] ?? null;
+        return self::$rf_params[$key] ?? null;
     }
 }
