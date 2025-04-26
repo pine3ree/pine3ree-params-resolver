@@ -57,6 +57,7 @@ final class ParamsResolverTest extends TestCase
             ['noexistent', false],
             [TestClass::class, false],
             [TestTrait::class, false],
+            [TestInterface::class, false],
         ];
 
         $this->container->method('has')->willReturnMap($hasReturnMap);
@@ -113,7 +114,15 @@ final class ParamsResolverTest extends TestCase
         $args = $this->resolver->resolve($callable);
     }
 
-    public function testResolveNonExistentParameterRaisesExceptionIfNotDefaultValue(): void
+    public function testThatNonResolvableDependencyRaisesExceptionIfNotDefaultValue(): void
+    {
+        $callable = function (TestInterface $test): void {};
+
+        $this->expectException(RuntimeException::class);
+        $args = $this->resolver->resolve($callable);
+    }
+
+    public function testThatResolvingNonExistentParameterRaisesExceptionIfNotDefaultValue(): void
     {
         $callable = function ($noexistent): void {};
 
@@ -121,7 +130,7 @@ final class ParamsResolverTest extends TestCase
         $args = $this->resolver->resolve($callable);
     }
 
-    public function testResolveNonExistentParameterSucceedIfDefaultValue(): void
+    public function testThatResolvingNonExistentParameterSucceedIfDefaultValue(): void
     {
         $callable = function ($noexistent = 'default'): void {};
 
