@@ -7,9 +7,11 @@ namespace pine3ree\test\Container;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 use DirectoryIterator;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use RuntimeException;
 use pine3ree\Container\ParamsResolver;
 
 final class ParamsResolverTest extends TestCase
@@ -36,6 +38,7 @@ final class ParamsResolverTest extends TestCase
             ['aString', 'The Answer'],
             [DateTimeInterface::class, new DateTimeImmutable()],
             [DateTimeImmutable::class, new DateTimeImmutable()],
+            ['datetime', 'now'],
         ];
 
         $hasReturnMap = [
@@ -44,6 +47,8 @@ final class ParamsResolverTest extends TestCase
             [DateTimeInterface::class, true],
             [DateTimeImmutable::class, true],
             [DateTime::class, false],
+            ['datetime', false],
+            [DateTimeZone::class, false],
             [DirectoryIterator::class, false],
             ['noexistent', false],
         ];
@@ -98,7 +103,7 @@ final class ParamsResolverTest extends TestCase
     {
         $callable = function (DirectoryIterator $dir): void {};
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $args = $this->resolver->resolve($callable);
     }
 
@@ -106,7 +111,7 @@ final class ParamsResolverTest extends TestCase
     {
         $callable = function ($noexistent): void {};
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $args = $this->resolver->resolve($callable);
     }
 
@@ -143,5 +148,32 @@ final class ParamsResolverTest extends TestCase
 
         self::assertEquals($injectedInt, $args[0]);
         self::assertEquals($injectedString, $args[1]);
+    }
+
+    public function testConstructor(): void
+    {
+        $constructor = [DateTimeImmutable::class, '__construct'];
+
+        $args = $this->resolver->resolve($constructor);
+
+        self::assertEquals('now', $args[0]);
+
+        $args = $this->resolver->resolve($constructor, [
+            'datetime' => $time = time(),
+        ]);
+
+        self::assertEquals($time, $args[0]);
+        self::assertNull($args[1]);
+    }
+
+    public function testNonExistentMethodRaisesException(): void
+    {
+        $dateTime = new DateTimeImmutable();
+
+        $callable = [$dateTime, 'nonExistent'];
+
+        $this->expectException(RuntimeException::class);
+
+        $args = $this->resolver->resolve($callable);
     }
 }
