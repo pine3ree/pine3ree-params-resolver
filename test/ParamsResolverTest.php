@@ -240,7 +240,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatNonInstatiatableClassRaisesException(): void
     {
-        $callable = function (Test $test): void {};
+        $callable = function (TestClass $test): void {};
 
         $this->expectException(RuntimeException::class);
 

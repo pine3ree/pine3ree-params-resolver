@@ -11,7 +11,7 @@ namespace pine3ree\test\Container;
 /**
  * Test class for unit testing
  */
-class Test
+class TestClass
 {
     public function __construct(string $mandatory)
     {
