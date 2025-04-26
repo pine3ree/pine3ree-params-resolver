@@ -165,14 +165,14 @@ class ParamsResolver implements ParamsResolverInterface
     }
 
     /**
+     * Get the cached reflection parameters for given callable key, if any.
+     *
      * @internal Used for debug
      *
-     * @return array<string, mixed>
+     * @return ReflectionParameter[]|null
      */
-    public static function getStaticDebugInfo(): array
+    public static function getCachedReflectionParameters(string $key): ?array
     {
-        return [
-            'self::$__r_params' => array_keys(self::$__r_params),
-        ];
+        return self::$__r_params[$key] ?? null;
     }
 }
