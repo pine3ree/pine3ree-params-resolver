@@ -8,7 +8,6 @@
 
 namespace pine3ree\Container;
 
-use pine3ree\Container\ParamsResolverInterface;
 use Closure;
 use Psr\Container\ContainerInterface;
 use ReflectionFunction;
@@ -16,6 +15,7 @@ use ReflectionMethod;
 use ReflectionNamedType;
 use RuntimeException;
 use Throwable;
+use pine3ree\Container\ParamsResolverInterface;
 
 use function array_keys;
 use function class_exists;

@@ -8,8 +8,8 @@
 
 namespace pine3ree\Container;
 
-use pine3ree\Container\ParamsResolver;
 use Psr\Container\ContainerInterface;
+use pine3ree\Container\ParamsResolver;
 
 class ParamsResolverFactory
 {
