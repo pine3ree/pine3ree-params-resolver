@@ -167,7 +167,7 @@ class ParamsResolver implements ParamsResolverInterface
     /**
      * @internal Used for debug
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public static function getStaticDebugInfo(): array
     {
