@@ -174,7 +174,7 @@ class ParamsResolver
     }
 
     /**
-     * @internal Used by internally by dependency injection
+     * @internal Used by internally by unit tests
      *
      * @return array
      */
