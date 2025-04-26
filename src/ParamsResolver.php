@@ -65,16 +65,21 @@ class ParamsResolver implements ParamsResolverInterface
             $object = $callable[0];
             $method = $callable[1];
             $class = is_object($object) ? get_class($object) : $object;
+            // Try cached reflection parameters first, if any
             $cache_key = "{$class}::{$method}";
             $rf_params = self::$rf_params[$cache_key] ?? null;
             if ($rf_params === null) {
-                if ($method === '__construct') {
-                    $rc = new ReflectionClass($class);
-                    $rm = $rc->getConstructor();
-                } else {
-                    $rm = new ReflectionMethod($object, $method);
+                $rc = new ReflectionClass($class);
+                if (!$rc->hasMethod($method)) {
+                    throw new RuntimeException(sprintf(
+                        "A method named `{$class}::{$method}` is not defined for given callable %s !",
+                        json_encode($callable)
+                    ));
                 }
-                self::$rf_params[$cache_key] = $rf_params = $rm->getParameters();
+                $rm = $method === '__construct' ? $rc->getConstructor() : $rc->getMethod($method);
+                if ($rm instanceof ReflectionMethod) {
+                    self::$rf_params[$cache_key] = $rf_params = $rm->getParameters();
+                }
             }
         } elseif (is_string($callable) && function_exists($callable)) {
             $rf_params = self::$rf_params[$callable] ?? null;
@@ -90,6 +95,10 @@ class ParamsResolver implements ParamsResolverInterface
                 "Cannot fetch a reflection method or function for given callable %s !",
                 json_encode($callable)
             ));
+        }
+
+        if (empty($rf_params)) {
+            return [];
         }
 
         $container = $container ?? $this->container;
