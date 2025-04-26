@@ -244,5 +244,12 @@ final class ParamsResolverTest extends TestCase
 
         $args = $this->resolver->resolve($callable);
     }
+
+    public function testEmptyParams(): void
+    {
+        $args = $this->resolver->resolve('time');
+
+        self::assertEquals([], $args);
+    }
 }
 
