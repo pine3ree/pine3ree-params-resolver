@@ -30,7 +30,7 @@ interface ParamsResolverInterface
      * The resolver usually composes a container itself, but this can be overriden
      * by using an alternative container provided as argument
      *
-     * @param string|callable|object $callable
+     * @param string|array{0: object|string, 1: string}|object $callable
      *      An [object/class, method] array expression, a function or an invokable
      *      object. Use [fqcn, '__construct'] for class constructors.
      * @param array<string, mixed> $resolvedParams Optionally injected resolved params indexed by FQCN/FQIN/container-service-ID
