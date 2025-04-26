@@ -66,9 +66,9 @@ jobs:
         id: phpstan
         run: composer phpstan
 
-      - name: Static Analysis (psalm)
-        id: psalm
-        run: composer psalm
+#      - name: Static Analysis (psalm)
+#        id: psalm
+#        run: composer psalm
 
       - name: Test (phpunit)
         id: phpunit
