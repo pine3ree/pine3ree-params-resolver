@@ -14,7 +14,7 @@ use pine3ree\Container\ParamsResolver;
 
 class ParamsResolverFactory
 {
-    public function __invoke(ContainerInterface $container) : ParamsResolver
+    public function __invoke(ContainerInterface $container): ParamsResolver
     {
         return new ParamsResolver($container);
     }
