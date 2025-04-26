@@ -20,7 +20,6 @@ use RuntimeException;
 use Throwable;
 use pine3ree\Container\ParamsResolverInterface;
 
-use function array_keys;
 use function class_exists;
 use function function_exists;
 use function get_class;
@@ -54,9 +53,13 @@ class ParamsResolver implements ParamsResolverInterface
     public function resolve($callable, array $resolvedParams = null, ?ContainerInterface $container = null): array
     {
         // Invokable objects
-        $is_object = is_object($callable);
+        $is_object  = is_object($callable);
+        $is_closure = $is_object && $callable instanceof Closure;
 
-        if ($is_object && ! $callable instanceof Closure && method_exists($callable, '__invoke')) {
+        /**
+         * @psalm-suppress PossiblyInvalidArgument Valid argument type is cached in $is_object
+         */
+        if ($is_object && !$is_closure && method_exists($callable, '__invoke')) {
             $callable = [$callable, '__invoke'];
         }
 
@@ -64,7 +67,17 @@ class ParamsResolver implements ParamsResolverInterface
         if (is_array($callable)) {
             $object = $callable[0];
             $method = $callable[1];
-            $class = is_object($object) ? get_class($object) : $object;
+            if (is_object($object)) {
+                $class = get_class($object);
+            } else {
+                $class = $object;
+                if (!class_exists($class)) {
+                    throw new RuntimeException(sprintf(
+                        "A class named `{$class}::{$method}` is not defined for given callable %s !",
+                        json_encode($callable)
+                    ));
+                }
+            }
             // Try cached reflection parameters first, if any
             $cache_key = "{$class}::{$method}";
             $rf_params = self::$rf_params[$cache_key] ?? null;
@@ -87,7 +100,10 @@ class ParamsResolver implements ParamsResolverInterface
                 $rf = new ReflectionFunction($callable);
                 self::$rf_params[$callable] = $rf_params = $rf->getParameters();
             }
-        } elseif ($is_object && $callable instanceof Closure) {
+        } elseif ($is_closure) {
+            /**
+             * @psalm-suppress InvalidArgument Valid argument type is cached in $is_closure
+             */
             $rf = new ReflectionFunction($callable);
             $rf_params = $rf->getParameters();
         } else {
@@ -97,6 +113,9 @@ class ParamsResolver implements ParamsResolverInterface
             ));
         }
 
+        /**
+         * @psalm-suppress RiskyTruthyFalsyComparison
+         */
         if (empty($rf_params)) {
             return [];
         }
