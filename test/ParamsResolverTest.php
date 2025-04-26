@@ -14,7 +14,9 @@ use Psr\Container\ContainerInterface;
 use RuntimeException;
 use pine3ree\Container\ParamsResolver;
 
+use function count;
 use function strtoupper;
+use function time;
 
 final class ParamsResolverTest extends TestCase
 {
@@ -129,7 +131,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatInjectedContainerIsUsed(): void
     {
-        $callable = function (int $someInt, $aString): void {};
+        $callable = function (int $someInt, string $aString): void {};
 
         $args = $this->resolver->resolve($callable, null, $this->alternate);
 
@@ -250,6 +252,19 @@ final class ParamsResolverTest extends TestCase
         $args = $this->resolver->resolve('time');
 
         self::assertEquals([], $args);
+    }
+
+    public function testCachedReflectionParameters()
+    {
+        $constructor = [DateTimeImmutable::class, '__construct'];
+
+        $args = $this->resolver->resolve($constructor);
+
+        $key = DateTimeImmutable::class . '::__construct';
+
+        $rf_params = ParamsResolver::getCachedReflectionParameters($key);
+
+        self::assertCount(2, $rf_params);
     }
 }
 
