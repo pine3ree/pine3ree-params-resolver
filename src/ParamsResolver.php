@@ -103,6 +103,7 @@ class ParamsResolver implements ParamsResolverInterface
         } elseif ($is_closure) {
             /**
              * @psalm-suppress InvalidArgument Valid argument type is cached in $is_closure
+             * @psalm-suppress ArgumentTypeCoercion Valid argument type is cached in $is_closure
              */
             $rf = new ReflectionFunction($callable);
             $rf_params = $rf->getParameters();
@@ -165,6 +166,9 @@ class ParamsResolver implements ParamsResolverInterface
                         ));
                     }
                 } else {
+                    /**
+                     * @psalm-suppress InvalidCast $rp_fqcn is a string
+                     */
                     throw new RuntimeException(
                         "`{$rp_fqcn}` is neither a valid interface nor a class name"
                         . " for given dependency named `{$rp_name}`!",
