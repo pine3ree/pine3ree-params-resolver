@@ -7,6 +7,7 @@ namespace pine3ree\test\Container;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
+use DirectoryIterator;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use pine3ree\Container\ParamsResolver;
@@ -42,6 +43,7 @@ final class ParamsResolverTest extends TestCase
             [DateTimeInterface::class, true],
             [DateTimeImmutable::class, true],
             [DateTime::class, false],
+            [DirectoryIterator::class, false],
             ['noexistent', false],
         ];
 
@@ -81,11 +83,26 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatConstructorCallFailureRaisesExceptionIfNotInContainer(): void
     {
-        $callable = function (DateTime $datetime): void {};
+        $callable = function (DirectoryIterator $dir): void {};
+
+        $this->expectException(\RuntimeException::class);
+        $args = $this->resolver->resolve($callable);
+    }
+
+    public function testResolveNonExistentParameterRaisesExceptionIfNotDefaultValue(): void
+    {
+        $callable = function ($noexistent): void {};
+
+        $this->expectException(\RuntimeException::class);
+        $args = $this->resolver->resolve($callable);
+    }
+
+    public function testResolveNonExistentParameterSucceedIfDefaultValue(): void
+    {
+        $callable = function ($noexistent = 'default'): void {};
 
         $args = $this->resolver->resolve($callable);
 
-        self::assertInstanceOf(DateTimeInterface::class, $args[0]);
-        self::assertInstanceOf(DateTime::class, $args[0]);
+        self::assertEquals('default',  $args[0]);
     }
 }
