@@ -52,7 +52,7 @@ class ParamsResolver implements ParamsResolverInterface
 
     public function resolve($callable, array $resolvedParams = null, ?ContainerInterface $container = null): array
     {
-        if (is_object($callable) && method_exists($callable)) {
+        if (is_object($callable) && method_exists($callable, '__invoke')) {
             $callable = [$callable, '__invoke'];
         }
 
