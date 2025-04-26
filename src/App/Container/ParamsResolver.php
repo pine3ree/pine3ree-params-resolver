@@ -116,7 +116,8 @@ class ParamsResolver
                         // Try injected/resolved params first
                         $args[] = $resolvedParams[$rp_fqcn];
                     } elseif ($rp_fqcn === ContainerInterface::class || $rp_fqcn === get_class($container)) {
-                        // A container should not be a type-hinted dependency: service-locator anti-pattern
+                        // A container should not be a type-hinted dependency: service-locator anti-pattern,
+                        // but another dependency resolver may need it
                         $args[] = $container;
                     } elseif ($container->has($rp_fqcn)) {
                         // Parameter resolved by the container
