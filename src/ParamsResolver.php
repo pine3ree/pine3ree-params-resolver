@@ -11,6 +11,7 @@ namespace pine3ree\Container;
 
 use Closure;
 use Psr\Container\ContainerInterface;
+use ReflectionClass;
 use ReflectionFunction;
 use ReflectionMethod;
 use ReflectionNamedType;
@@ -53,7 +54,9 @@ class ParamsResolver implements ParamsResolverInterface
     public function resolve($callable, array $resolvedParams = null, ?ContainerInterface $container = null): array
     {
         // Invokable objects
-        if (is_object($callable) && method_exists($callable, '__invoke')) {
+        $is_object = is_object($callable);
+
+        if ($is_object && ! $callable instanceof Closure && method_exists($callable, '__invoke')) {
             $callable = [$callable, '__invoke'];
         }
 
@@ -62,17 +65,16 @@ class ParamsResolver implements ParamsResolverInterface
             $object = $callable[0];
             $method = $callable[1];
             $class = is_object($object) ? get_class($object) : $object;
-            if ($object instanceof Closure) {
-                // Anonymous function reflection parameters are not cached
-                $rf = new ReflectionFunction($object);
-                $__r_params = $rf->getParameters();
-            } else {
-                $cache_key = "{$class}::{$method}";
-                $__r_params = self::$__r_params[$cache_key] ?? null;
-                if ($__r_params === null) {
+            $cache_key = "{$class}::{$method}";
+            $__r_params = self::$__r_params[$cache_key] ?? null;
+            if ($__r_params === null) {
+                if ($method === '__construct') {
+                    $rc = new ReflectionClass($class);
+                    $rm = $rc->getConstructor();
+                } else {
                     $rm = new ReflectionMethod($object, $method);
-                    self::$__r_params[$cache_key] = $__r_params = $rm->getParameters();
                 }
+                self::$__r_params[$cache_key] = $__r_params = $rm->getParameters();
             }
         } elseif (is_string($callable) && function_exists($callable)) {
             $__r_params = self::$__r_params[$callable] ?? null;
@@ -80,6 +82,9 @@ class ParamsResolver implements ParamsResolverInterface
                 $rf = new ReflectionFunction($callable);
                 self::$__r_params[$callable] = $__r_params = $rf->getParameters();
             }
+        } elseif ($is_object && $callable instanceof Closure) {
+            $rf = new ReflectionFunction($callable);
+            $__r_params = $rf->getParameters();
         } else {
             throw new RuntimeException(sprintf(
                 "Cannot fetch a reflection method or function for given callable %s !",
