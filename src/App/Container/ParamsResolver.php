@@ -8,6 +8,7 @@
 
 namespace App\Container;
 
+use App\Container\ParamsResolverInterface;
 use Closure;
 use Psr\Container\ContainerInterface;
 use ReflectionFunction;
@@ -37,7 +38,7 @@ use function sprintf;
  * and then as a last resource a default value, if provided, will be used.
  *
  */
-class ParamsResolver
+class ParamsResolver implements ParamsResolverInterface
 {
     /**
      * The container used to resolve the parameters that represent dependencies
@@ -56,17 +57,6 @@ class ParamsResolver
         $this->container = $container;
     }
 
-    /**
-     * Resolve a callable arguments using given params or retrieving them from the container
-     *
-     * @param string|array|object $callable An object/class method array expression,
-     *      a function or an invokable object. Use ['fqcn', '__construct'] for
-     *      class constructors
-     * @param array $resolvedParams Optionally injected resolved params indexed by FQCN/FQIN/container-service-ID
-     * @param ContainerInterface|null $container Optional alternative container for dependency resolution
-     * @return array
-     * @throws RuntimeException
-     */
     public function resolve($callable, array $resolvedParams = null, ?ContainerInterface $container = null): array
     {
         if (is_object($callable) && is_callable($callable)) {
