@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace pine3ree\Container;
 
 use Psr\Container\ContainerInterface;
+use Throwable;
 
 /**
  * ParamsResolver is a method/function argument resolver that uses either injected
@@ -29,13 +30,14 @@ interface ParamsResolverInterface
      * The resolver usually composes a container itself, but this can be overriden
      * by using an alternative container provided as argument
      *
-     * @param string|array|object $callable An [object/class, method] array expression,
+     * @param string|array<string|object, string>|Closure|object $callable
+     *      An [object/class, method] array expression,
      *      a function or an invokable object. Use [fqcn, '__construct'] for
      *      class constructors.
-     * @param array $resolvedParams Optionally injected resolved params indexed by FQCN/FQIN/container-service-ID
+     * @param array<string|int, mixed> $resolvedParams Optionally injected resolved params indexed by FQCN/FQIN/container-service-ID
      * @param ContainerInterface|null $container Optional alternative container for dependency resolution
-     * @return array
-     * @throws RuntimeException
+     * @return array<mixed>
+     * @throws Throwable
      */
     public function resolve($callable, array $resolvedParams = null, ?ContainerInterface $container = null): array;
 }
