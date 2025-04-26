@@ -14,6 +14,8 @@ use Psr\Container\ContainerInterface;
 use RuntimeException;
 use pine3ree\Container\ParamsResolver;
 
+use function strtoupper;
+
 final class ParamsResolverTest extends TestCase
 {
     private ParamsResolver $resolver;
@@ -166,7 +168,7 @@ final class ParamsResolverTest extends TestCase
         self::assertNull($args[1]);
     }
 
-    public function testNonExistentMethodRaisesException(): void
+    public function testThatNonExistentMethodRaisesException(): void
     {
         $dateTime = new DateTimeImmutable();
 
@@ -175,5 +177,23 @@ final class ParamsResolverTest extends TestCase
         $this->expectException(RuntimeException::class);
 
         $args = $this->resolver->resolve($callable);
+    }
+
+    public function testThatNonExistentClassRaisesException(): void
+    {
+        $callable = ['Non\Existent\Class', '__construct'];
+
+        $this->expectException(RuntimeException::class);
+
+        $args = $this->resolver->resolve($callable);
+    }
+
+    public function testContainerDependency(): void
+    {
+        $callable = function (ContainerInterface $container): void {};
+
+        $args = $this->resolver->resolve($callable);
+
+        self::assertEquals($this->resolver->getContainer(),  $args[0]);
     }
 }
