@@ -131,7 +131,8 @@ class ParamsResolver
                         } catch (Throwable $ex) {
                             throw new RuntimeException(sprintf(
                                 "Unable to instantiate an object for the parameter"
-                                . " with name `{$rp_name}` for given callable %s!",
+                                . " with name `{$rp_name}` and class `{$rp_fqcn}` "
+                                . "for given callable %s!",
                                 json_encode($callable)
                             ));
                         }
