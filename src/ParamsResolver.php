@@ -52,6 +52,7 @@ class ParamsResolver implements ParamsResolverInterface
 
     public function resolve($callable, array $resolvedParams = null, ?ContainerInterface $container = null): array
     {
+        // Invokable objects
         if (is_object($callable) && method_exists($callable, '__invoke')) {
             $callable = [$callable, '__invoke'];
         }
@@ -61,10 +62,10 @@ class ParamsResolver implements ParamsResolverInterface
             $object = $callable[0];
             $method = $callable[1];
             $class = is_object($object) ? get_class($object) : $object;
-            if ($class === Closure::class) {
+            if ($object instanceof Closure) {
                 // Anonymous function reflection parameters are not cached
-                $rm = new ReflectionMethod($object, $method);
-                $__r_params = $rm->getParameters();
+                $rf = new ReflectionFunction($object);
+                $__r_params = $rf->getParameters();
             } else {
                 $cache_key = "{$class}::{$method}";
                 $__r_params = self::$__r_params[$cache_key] ?? null;
