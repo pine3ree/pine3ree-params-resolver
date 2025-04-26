@@ -15,6 +15,5 @@ class TestClass
 {
     public function __construct(string $mandatory)
     {
-
     }
 }

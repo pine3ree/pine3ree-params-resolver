@@ -78,6 +78,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testResolveSimpleParameters(): void
     {
+        // phpcs:ignore
         $callable = function (int $someInt, $aString): void {};
 
         $args = $this->resolver->resolve($callable);
@@ -88,6 +89,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testResolveDependency(): void
     {
+        // phpcs:ignore
         $callable = function (DateTimeInterface $datetime): void {};
 
         $args = $this->resolver->resolve($callable);
@@ -98,6 +100,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatConstructorCallSuccessIfNotInContainer(): void
     {
+        // phpcs:ignore
         $callable = function (DateTime $datetime): void {};
 
         $args = $this->resolver->resolve($callable);
@@ -108,6 +111,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatConstructorCallFailureRaisesExceptionIfNotInContainer(): void
     {
+        // phpcs:ignore
         $callable = function (DirectoryIterator $dir): void {};
 
         $this->expectException(RuntimeException::class);
@@ -116,6 +120,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatNonResolvableDependencyRaisesExceptionIfNotDefaultValue(): void
     {
+        // phpcs:ignore
         $callable = function (TestInterface $test): void {};
 
         $this->expectException(RuntimeException::class);
@@ -124,6 +129,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatResolvingNonExistentParameterRaisesExceptionIfNotDefaultValue(): void
     {
+        // phpcs:ignore
         $callable = function ($noexistent): void {};
 
         $this->expectException(RuntimeException::class);
@@ -132,6 +138,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatResolvingNonExistentParameterSucceedIfDefaultValue(): void
     {
+        // phpcs:ignore
         $callable = function ($noexistent = 'default'): void {};
 
         $args = $this->resolver->resolve($callable);
@@ -141,6 +148,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatInjectedContainerIsUsed(): void
     {
+        // phpcs:ignore
         $callable = function (int $someInt, string $aString): void {};
 
         $args = $this->resolver->resolve($callable, null, $this->alternate);
@@ -151,6 +159,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatInjectedParamsAreUsed(): void
     {
+        // phpcs:ignore
         $callable = function (int $someInt, string $aString, DateTimeInterface $datetime): void {};
 
         $injectedInt = 123;
@@ -204,6 +213,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testContainerDependency(): void
     {
+        // phpcs:ignore
         $callable = function (ContainerInterface $container): void {};
 
         $args = $this->resolver->resolve($callable);
@@ -245,6 +255,7 @@ final class ParamsResolverTest extends TestCase
     public function testInvokableObject(): void
     {
         $invokable = new class {
+            // phpcs:ignore
             public function __invoke(string $str) {
                 //no-op;
             }
@@ -259,6 +270,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatNonInstatiatableClassRaisesException(): void
     {
+        // phpcs:ignore
         $callable = function (TestClass $test): void {};
 
         $this->expectException(RuntimeException::class);
@@ -268,6 +280,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatInvalidDependencyParameterTypeRaisesException(): void
     {
+        // phpcs:ignore
         $callable = function (TestTrait $test): void {};
 
         $this->expectException(RuntimeException::class);
@@ -295,4 +308,3 @@ final class ParamsResolverTest extends TestCase
         self::assertCount(2, $rf_params);
     }
 }
-

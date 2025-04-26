@@ -15,6 +15,5 @@ trait TestTrait
 {
     public function doSomething()
     {
-
     }
 }
