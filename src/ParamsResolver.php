@@ -1,10 +1,11 @@
 <?php
 
 /**
- * @package     p3im
- * @subpackage  p3im-app
- * @author      pine3ree https://github.com/pine3ree
+ * @package pine3ree-container-params-resolver
+ * @author  pine3ree https://github.com/pine3ree
  */
+
+declare(strict_types=1);
 
 namespace pine3ree\Container;
 
@@ -29,15 +30,6 @@ use function is_string;
 use function json_encode;
 use function sprintf;
 
-/**
- * ParamsResolver is a method/function argument resolver that uses either injected
- * and resolved values or fetch dependencies from the container
- *
- * Parameters are looked-up by type-hinted class/interface-name or by name.
- * The search starts inside the injected default parameters, then in the container
- * and then as a last resource a default value, if provided, will be used.
- *
- */
 class ParamsResolver implements ParamsResolverInterface
 {
     /**
