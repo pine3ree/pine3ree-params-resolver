@@ -123,7 +123,7 @@ final class ParamsResolverTest extends TestCase
 
         $args = $this->resolver->resolve($callable);
 
-        self::assertEquals('default',  $args[0]);
+        self::assertEquals('default', $args[0]);
     }
 
     public function testThatInjectedContainerIsUsed(): void
@@ -138,7 +138,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatInjectedParamsAreUsed(): void
     {
-        $callable = function (int $someInt, string $aString): void {};
+        $callable = function (int $someInt, string $aString, DateTimeInterface $datetime): void {};
 
         $injectedInt = 123;
         $injectedString = 'Injected answer';
@@ -146,6 +146,7 @@ final class ParamsResolverTest extends TestCase
         $args = $this->resolver->resolve($callable, [
             'someInt' => $injectedInt,
             'aString' => $injectedString,
+            DateTimeInterface::class => new DateTimeImmutable('1970-01-01'),
         ]);
 
         self::assertEquals($injectedInt, $args[0]);
@@ -194,6 +195,43 @@ final class ParamsResolverTest extends TestCase
 
         $args = $this->resolver->resolve($callable);
 
-        self::assertEquals($this->resolver->getContainer(),  $args[0]);
+        self::assertEquals($this->resolver->getContainer(), $args[0]);
+    }
+
+    public function testFunction(): void
+    {
+        $args = $this->resolver->resolve('strtoupper', [
+            'string' => 'SOME STRING',
+        ]);
+
+        self::assertEquals('SOME STRING', $args[0]);
+    }
+
+    public function testMethod(): void
+    {
+        $dateTime = new DateTimeImmutable();
+
+        $callable = [$dateTime, 'format'];
+
+        $args = $this->resolver->resolve($callable, [
+            'format' => '%Y-%m-%d',
+        ]);
+
+        self::assertEquals('%Y-%m-%d', $args[0]);
+    }
+
+    public function testInvokableObject(): void
+    {
+        $invokable = new class {
+            public function __invoke(string $str) {
+                //no-op;
+            }
+        };
+
+        $args = $this->resolver->resolve($invokable, [
+            'str' => $str = 'Some string',
+        ]);
+
+        self::assertEquals($str, $args[0]);
     }
 }
