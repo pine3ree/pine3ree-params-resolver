@@ -31,9 +31,8 @@ interface ParamsResolverInterface
      * by using an alternative container provided as argument
      *
      * @param string|callable|object $callable
-     *      An [object/class, method] array expression,
-     *      a function or an invokable object. Use [fqcn, '__construct'] for
-     *      class constructors.
+     *      An [object/class, method] array expression, a function or an invokable
+     *      object. Use [fqcn, '__construct'] for class constructors.
      * @param array<string, mixed> $resolvedParams Optionally injected resolved params indexed by FQCN/FQIN/container-service-ID
      * @param ContainerInterface|null $container Optional alternative container for dependency resolution
      * @return array<mixed>
