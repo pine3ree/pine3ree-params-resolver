@@ -17,6 +17,7 @@ final class ParamsResolverTest extends TestCase
     private ParamsResolver $resolver;
 
     private ContainerInterface $container;
+    private ContainerInterface $alternate;
 
     /**
      * set up test environmemt
@@ -26,9 +27,9 @@ final class ParamsResolverTest extends TestCase
         parent::setUp();
 
         $this->container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $this->resolver = new ParamsResolver($this->container);
+        $this->alternate = $this->getMockBuilder(ContainerInterface::class)->getMock();
 
-        $datetime = new DateTimeImmutable();
+        $this->resolver = new ParamsResolver($this->container);
 
         $containerParamsMap = [
             ['someInt', 42],
@@ -49,6 +50,18 @@ final class ParamsResolverTest extends TestCase
 
         $this->container->method('has')->willReturnMap($hasReturnMap);
         $this->container->method('get')->willReturnMap($containerParamsMap);
+
+        $alternateParamsMap = [
+            ['someInt', 24],
+            ['aString', 'Another answer'],
+        ];
+        $alternateHasMap = [
+            ['someInt', true],
+            ['aString', true],
+        ];
+
+        $this->alternate->method('has')->willReturnMap($alternateHasMap);
+        $this->alternate->method('get')->willReturnMap($alternateParamsMap);
     }
 
     public function testResolveSimpleParameters(): void
@@ -104,5 +117,31 @@ final class ParamsResolverTest extends TestCase
         $args = $this->resolver->resolve($callable);
 
         self::assertEquals('default',  $args[0]);
+    }
+
+    public function testThatInjectedContainerIsUsed(): void
+    {
+        $callable = function (int $someInt, $aString): void {};
+
+        $args = $this->resolver->resolve($callable, null, $this->alternate);
+
+        self::assertEquals(24, $args[0]);
+        self::assertEquals('Another answer', $args[1]);
+    }
+
+    public function testThatInjectedParamsAreUsed(): void
+    {
+        $callable = function (int $someInt, string $aString): void {};
+
+        $injectedInt = 123;
+        $injectedString = 'Injected answer';
+
+        $args = $this->resolver->resolve($callable, [
+            'someInt' => $injectedInt,
+            'aString' => $injectedString,
+        ]);
+
+        self::assertEquals($injectedInt, $args[0]);
+        self::assertEquals($injectedString, $args[1]);
     }
 }
