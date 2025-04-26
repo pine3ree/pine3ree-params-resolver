@@ -25,7 +25,6 @@ final class ParamsResolverFactoryTest extends TestCase
 
         $this->factory = new ParamsResolverFactory();
         $this->container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-
     }
 
     public function testThatFactoryCanCreateParamsResolverInstance(): void
