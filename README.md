@@ -15,10 +15,10 @@ In the following example the dependency $db is fetched from the container, the
 empty array value.
 
 ```php
+<?php
 
-use My\Container
-use My\Db
-use pine3ree\Container\ParamsResolver
+use My\Db;
+use pine3ree\Container\ParamsResolver;
 
 class MyDataMapper
 {
