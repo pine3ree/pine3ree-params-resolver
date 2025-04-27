@@ -50,7 +50,7 @@ class ParamsResolver implements ParamsResolverInterface
         $this->container = $container;
     }
 
-    public function resolve($callable, ?array $resolvedParams = null, ?ContainerInterface $container = null): array
+    public function resolve($callable, ?array $resolvedParams = null): array
     {
         // Invokable objects
         $is_object    = is_object($callable);
@@ -126,7 +126,7 @@ class ParamsResolver implements ParamsResolverInterface
             return [];
         }
 
-        $container = $container ?? $this->container;
+        $container = $this->container;
 
         // Build the arguments for the provided ~callable~
         $args = [];

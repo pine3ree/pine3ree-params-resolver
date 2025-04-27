@@ -24,8 +24,6 @@ final class ParamsResolverTest extends TestCase
     private ParamsResolver $resolver;
 
     private ContainerInterface $container;
-    private ContainerInterface $alternate;
-
     /**
      * set up test environmemt
      */
@@ -34,7 +32,6 @@ final class ParamsResolverTest extends TestCase
         parent::setUp();
 
         $this->container = $this->getMockBuilder(ContainerInterface::class)->getMock();
-        $this->alternate = $this->getMockBuilder(ContainerInterface::class)->getMock();
 
         $this->resolver = new ParamsResolver($this->container);
 
@@ -65,18 +62,6 @@ final class ParamsResolverTest extends TestCase
 
         $this->container->method('has')->willReturnMap($hasReturnMap);
         $this->container->method('get')->willReturnMap($containerParamsMap);
-
-        $alternateParamsMap = [
-            ['someInt', 24],
-            ['aString', 'Another answer'],
-        ];
-        $alternateHasMap = [
-            ['someInt', true],
-            ['aString', true],
-        ];
-
-        $this->alternate->method('has')->willReturnMap($alternateHasMap);
-        $this->alternate->method('get')->willReturnMap($alternateParamsMap);
     }
 
     public function testResolveSimpleParameters(): void
@@ -159,17 +144,6 @@ final class ParamsResolverTest extends TestCase
         self::assertNull($args[0]);
     }
 
-    public function testThatInjectedContainerIsUsed(): void
-    {
-        // phpcs:ignore
-        $callable = function (int $someInt, string $aString): void {};
-
-        $args = $this->resolver->resolve($callable, null, $this->alternate);
-
-        self::assertEquals(24, $args[0]);
-        self::assertEquals('Another answer', $args[1]);
-    }
-
     public function testThatInjectedParamsAreUsed(): void
     {
         // phpcs:ignore
@@ -200,20 +174,25 @@ final class ParamsResolverTest extends TestCase
             ];
         }
 
-        $args = $this->resolver->resolve($constructor, [
-            'time' => 'now', // php-7.4
-            'timezone' => 'UTC', // php-7.4
-        ]);
+        $args = $this->resolver->resolve($constructor, $injectedParams);
 
         self::assertEquals('now', $args[0]);
 
         $time = time();
-        $args = $this->resolver->resolve($constructor, [
-            'datetime' => $time,
-            DateTimeZone::class => 'UTC',
-            'time' => $time, // php-7.4
-            'timezone' => 'UTC', // php-7.4
-        ]);
+        $injectedParams = [];
+        if (PHP_VERSION_ID < 80000) {
+            $injectedParams = [
+                'time' => $time, // php-7.4
+                'timezone' => 'UTC', // php-7.4
+            ];
+        } else {
+            $injectedParams = [
+                'datetime' => $time,
+                DateTimeZone::class => 'UTC',
+            ];
+        }
+
+        $args = $this->resolver->resolve($constructor, $injectedParams);
 
         self::assertEquals($time, $args[0]);
         self::assertEquals('UTC', $args[1]);

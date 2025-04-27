@@ -33,10 +33,10 @@ interface ParamsResolverInterface
      * @param string|array{0: object|string, 1: string}|object $callable
      *      An [object/class, method] array expression, a function or an invokable
      *      object. Use [fqcn, '__construct'] for class constructors.
-     * @param array<string, mixed> $resolvedParams Optionally injected resolved params indexed by FQCN/FQIN/container-service-ID
-     * @param ContainerInterface|null $container Optional alternative container for dependency resolution
+     * @param array<string, mixed> $resolvedParams Optionally injected resolved params
+     *      indexed by FQCN/FQIN/container-service-ID
      * @return array<mixed>
      * @throws Throwable
      */
-    public function resolve($callable, ?array $resolvedParams = null, ?ContainerInterface $container = null): array;
+    public function resolve($callable, ?array $resolvedParams = null): array;
 }
