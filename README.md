@@ -47,4 +47,4 @@ $myDataMapper = new MyDataMapper(...args);
 
 ```
 
-A common usage of ParamsResolver is inside a reflection based factory
+A common usage of ParamsResolver is within a reflection based factory
