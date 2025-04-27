@@ -22,6 +22,5 @@ class InitClass
 {
     public function __construct(public DateTime $dateTime = new DateTime())
     {
-
     }
 }
