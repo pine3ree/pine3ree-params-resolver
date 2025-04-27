@@ -55,9 +55,6 @@ class ParamsResolver implements ParamsResolverInterface
         $is_closure   = $is_object && $callable instanceof Closure;
         $is_invokable = $is_object && !$is_closure && method_exists($callable, '__invoke');
 
-        /**
-         * @psalm-suppress PossiblyInvalidArgument Valid argument type is cached in $is_object
-         */
         if ($is_invokable) {
             $callable = [$callable, '__invoke'];
         }
@@ -102,10 +99,6 @@ class ParamsResolver implements ParamsResolverInterface
                 self::$rf_params[$callable] = $rf_params = $rf->getParameters();
             }
         } elseif ($is_closure) {
-            /**
-             * @psalm-suppress InvalidArgument Valid argument type is cached in $is_closure
-             * @psalm-suppress ArgumentTypeCoercion Valid argument type is cached in $is_closure
-             */
             $rf = new ReflectionFunction($callable);
             $rf_params = $rf->getParameters();
         } else {
@@ -114,9 +107,6 @@ class ParamsResolver implements ParamsResolverInterface
             );
         }
 
-        /**
-         * @psalm-suppress RiskyTruthyFalsyComparison
-         */
         if (empty($rf_params)) {
             return [];
         }
@@ -167,9 +157,6 @@ class ParamsResolver implements ParamsResolverInterface
                         );
                     }
                 } else {
-                    /**
-                     * @psalm-suppress InvalidCast $rp_fqcn is a string
-                     */
                     throw new RuntimeException(
                         "`{$rp_fqcn}` is neither a valid interface nor a class name"
                         . " for given dependency named `{$rp_name}`!",

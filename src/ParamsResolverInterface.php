@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace pine3ree\Container;
 
-use Psr\Container\ContainerInterface;
 use Throwable;
 
 /**
