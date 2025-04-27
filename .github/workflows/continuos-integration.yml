@@ -76,5 +76,6 @@ jobs:
 
       - name: Coverage (clover)
         id: coverage-clover
+        if: ${{ matrix.php-versions < '8.2.0' }}
         run: composer test-coverage
         
