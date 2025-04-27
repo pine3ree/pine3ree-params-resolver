@@ -50,7 +50,6 @@ jobs:
 
       - name: Update Composer dependencies to lowest stable
         id: composer-update-lowest
-#        if: ${{ matrix.composer-deps == 'lowest' && matrix.php-versions < '8.2' }}
         run: composer update ${{ env.COMPOSER_ARGS }} --prefer-stable --prefer-lowest
 
       - name: Update Composer dependencies to latest
@@ -64,6 +63,7 @@ jobs:
 
       - name: Static Analysis (phpstan)
         id: phpstan
+        if: ${{ matrix.composer-deps == 'lowest' || matrix.php-versions < '8.4' }}
         run: composer phpstan
 
 #      - name: Static Analysis (psalm)
