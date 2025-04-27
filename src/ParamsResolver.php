@@ -110,8 +110,7 @@ class ParamsResolver implements ParamsResolverInterface
             $rf_params = $rf->getParameters();
         } else {
             throw new RuntimeException(
-                "Cannot fetch a reflection method or function for given callable!",
-                json_encode($callable)
+                "Cannot fetch a reflection method or function for given callable!"
             );
         }
 
