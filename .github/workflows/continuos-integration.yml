@@ -63,7 +63,7 @@ jobs:
 
       - name: Static Analysis (phpstan)
         id: phpstan
-        if: ${{ matrix.composer-deps == 'lowest' || matrix.php-versions < '8.4' }}
+        if: ${{ matrix.composer-deps == 'latest' || matrix.php-versions < '8.4' }}
         run: composer phpstan
 
 #      - name: Static Analysis (psalm)
