@@ -188,7 +188,6 @@ class ParamsResolver implements ParamsResolverInterface
                 $args[] = $rp->getDefaultValue();
             } elseif ($rp->allowsNull()) {
                 // Finally try a NULL, if nullable parameter
-                var_dump($rp->getName());
                 $args[] = null;
             } else {
                 throw new RuntimeException(sprintf(
