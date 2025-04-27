@@ -73,6 +73,11 @@ class ParamsResolver implements ParamsResolverInterface
         if (is_array($callable)) {
             $object = $callable[0] ?? null; // @phpstan-ignore nullCoalesce.offset
             $method = $callable[1] ?? null; // @phpstan-ignore nullCoalesce.offset
+            if (empty($method) || !is_string($method)) {
+                throw new RuntimeException(
+                    "An invalid method value was provided in element {1} of the callable array specs!"
+                );
+            }
             if (empty($object)) {
                 throw new RuntimeException(
                     "An empty object/class value was provided in element {0} of the callable array specs!"
@@ -90,11 +95,6 @@ class ParamsResolver implements ParamsResolverInterface
             } else {
                 throw new RuntimeException(
                     "An invalid object/class value was provided in element {0} of the callable array specs!"
-                );
-            }
-            if (empty($method) || !is_string($method)) {
-                throw new RuntimeException(
-                    "An invalid method value was provided in element {1} of the callable array specs!"
                 );
             }
             // Try cached reflection parameters first, if any
