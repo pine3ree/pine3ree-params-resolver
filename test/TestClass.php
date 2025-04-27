@@ -16,4 +16,10 @@ class TestClass
     public function __construct(string $mandatory)
     {
     }
+    public function doSomething(int $number = 42)
+    {
+    }
+    public static function doSomethingStatic(?int $number = null)
+    {
+    }
 }

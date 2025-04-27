@@ -58,6 +58,7 @@ final class ParamsResolverTest extends TestCase
             [TestClass::class, false],
             [TestTrait::class, false],
             [TestInterface::class, false],
+            ['number', false],
         ];
 
         $this->container->method('has')->willReturnMap($hasReturnMap);
@@ -287,6 +288,26 @@ final class ParamsResolverTest extends TestCase
         ]);
 
         self::assertEquals('%Y-%m-%d', $args[0]);
+    }
+
+    /**
+     * @dataProvider provideMethods
+     */
+    public function testInstanceAndStaticMethods($callable, $params, $arg0): void
+    {
+        $args = $this->resolver->resolve($callable, $params);
+
+        self::assertEquals($arg0, $args[0]);
+    }
+
+    public function provideMethods(): array
+    {
+        return [
+            [[new TestClass('test'), 'doSomething'], null, 42],
+            [[new TestClass('test'), 'doSomething'], ['number' => 27], 27],
+            [[TestClass::class, 'doSomethingStatic'], null, null],
+            [[TestClass::class, 'doSomethingStatic'], ['number' => 27], 27],
+        ];
     }
 
     public function testInvokableObject(): void
