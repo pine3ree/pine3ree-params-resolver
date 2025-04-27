@@ -238,6 +238,23 @@ final class ParamsResolverTest extends TestCase
         self::assertNull($args[0]);
     }
 
+    /**
+     * @requires PHP 8.1.0
+     */
+    public function testUnresolvedDependencyWithDefaultValue(): void
+    {
+        // phpcs:ignore
+        if (PHP_VERSION_ID < 80100) {
+            self::markTestSkipped("Feature only available in PHP-8.1+");
+        }
+
+        $callable = [InitClass::class, '__construct'];
+
+        $args = $this->resolver->resolve($callable);
+
+        self::assertInstanceOf(DateTime::class, $args[0]);
+    }
+
     public function testFunction(): void
     {
         $someString = 'SOME STRING';
