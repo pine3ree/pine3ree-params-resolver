@@ -51,6 +51,7 @@ final class ParamsResolverTest extends TestCase
             [DateTimeInterface::class, true],
             [DateTimeImmutable::class, true],
             [DateTime::class, false],
+            ['time', false],
             ['datetime', false],
             [DateTimeZone::class, false],
             ['timezone', false],
