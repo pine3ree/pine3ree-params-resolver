@@ -71,8 +71,8 @@ class ParamsResolver implements ParamsResolverInterface
     {
         // Case: callable array specs [object/class, method]
         if (is_array($callable)) {
-            $object = $callable[0] ?? null; // @phpstan-ignore nullCoalesce.offset
-            $method = $callable[1] ?? null; // @phpstan-ignore nullCoalesce.offset
+            $object = $callable[0] ?? null; // @phpstan-ignore-line
+            $method = $callable[1] ?? null; // @phpstan-ignore-line
             if (empty($method) || !is_string($method)) {
                 throw new RuntimeException(
                     "An invalid method value was provided in element {1} of the callable array specs!"
