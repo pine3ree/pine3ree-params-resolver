@@ -38,5 +38,5 @@ interface ParamsResolverInterface
      * @return array<mixed>
      * @throws Throwable
      */
-    public function resolve($callable, array $resolvedParams = null, ?ContainerInterface $container = null): array;
+    public function resolve($callable, ?array $resolvedParams = null, ?ContainerInterface $container = null): array;
 }
