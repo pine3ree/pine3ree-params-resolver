@@ -4,7 +4,7 @@ name: "Continuous Integration"
 on: [push, pull_request]
 
 env:
-  COMPOSER_ARGS: '--no-interaction --no-progress --prefer-dist --optimize-autoloader'
+  COMPOSER_ARGS: '--no-interaction --no-progress --prefer-dist --prefer-stable --optimize-autoloader'
 
 jobs:
 
@@ -50,8 +50,8 @@ jobs:
 
       - name: Update Composer dependencies to lowest stable
         id: composer-update-lowest
-        if: ${{ matrix.composer-deps == 'lowest' && matrix.php-versions < '8.2' }}
-        run: composer update ${{ env.COMPOSER_ARGS }} --prefer-lowest --prefer-stable
+#        if: ${{ matrix.composer-deps == 'lowest' && matrix.php-versions < '8.2' }}
+        run: composer update ${{ env.COMPOSER_ARGS }} --prefer-lowest
 
       - name: Update Composer dependencies to latest
         id: composer-update-latest
