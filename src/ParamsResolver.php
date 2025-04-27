@@ -50,11 +50,13 @@ class ParamsResolver implements ParamsResolverInterface
 
     public function resolve($callable, ?array $resolvedParams = null): array
     {
-        // Invokable objects
+        // Check if closure or invokable objects
         $is_object    = is_object($callable);
         $is_closure   = $is_object && $callable instanceof Closure;
         $is_invokable = $is_object && !$is_closure && method_exists($callable, '__invoke');
 
+        // Only invokable objects are transformed into array form
+        // Closures are handled directly via reflection api
         if ($is_invokable) {
             $callable = [$callable, '__invoke'];
         }
