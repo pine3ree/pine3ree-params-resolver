@@ -53,13 +53,14 @@ class ParamsResolver implements ParamsResolverInterface
     public function resolve($callable, ?array $resolvedParams = null, ?ContainerInterface $container = null): array
     {
         // Invokable objects
-        $is_object  = is_object($callable);
-        $is_closure = $is_object && $callable instanceof Closure;
+        $is_object    = is_object($callable);
+        $is_closure   = $is_object && $callable instanceof Closure;
+        $is_invokable = $is_object && !$is_closure && method_exists($callable, '__invoke');
 
         /**
          * @psalm-suppress PossiblyInvalidArgument Valid argument type is cached in $is_object
          */
-        if ($is_object && !$is_closure && method_exists($callable, '__invoke')) {
+        if ($is_invokable) {
             $callable = [$callable, '__invoke'];
         }
 
@@ -82,14 +83,18 @@ class ParamsResolver implements ParamsResolverInterface
             $cache_key = "{$class}::{$method}";
             $rf_params = self::$rf_params[$cache_key] ?? null;
             if ($rf_params === null) {
-                $rc = new ReflectionClass($class);
-                if (!$rc->hasMethod($method)) {
-                    throw new RuntimeException(sprintf(
-                        "A method named `{$class}::{$method}` is not defined for given callable %s !",
-                        json_encode($callable)
-                    ));
+                if ($is_invokable) {
+                    $rm = new ReflectionMethod($class, '__invoke');
+                } else {
+                    $rc = new ReflectionClass($class);
+                    if (!$rc->hasMethod($method)) {
+                        throw new RuntimeException(sprintf(
+                            "A method named `{$class}::{$method}` is not defined for given callable %s !",
+                            json_encode($callable)
+                        ));
+                    }
+                    $rm = $method === '__construct' ? $rc->getConstructor() : $rc->getMethod($method);
                 }
-                $rm = $method === '__construct' ? $rc->getConstructor() : $rc->getMethod($method);
                 if ($rm instanceof ReflectionMethod) {
                     self::$rf_params[$cache_key] = $rf_params = $rm->getParameters();
                 }
@@ -184,10 +189,10 @@ class ParamsResolver implements ParamsResolverInterface
                 // Injected parameter resolved as container service-id
                 $args[] = $container->get($rp_name);
             } elseif ($rp->isDefaultValueAvailable()) {
-                // The try a default parameter, if available
+                // The use a default parameter, if available
                 $args[] = $rp->getDefaultValue();
             } elseif ($rp->allowsNull()) {
-                // Finally try a NULL, if nullable parameter
+                // Finally use the NULL value, if the parameter is nullable
                 $args[] = null;
             } else {
                 throw new RuntimeException(sprintf(
