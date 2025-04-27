@@ -14,7 +14,8 @@ use Psr\Container\ContainerInterface;
 use RuntimeException;
 use pine3ree\Container\ParamsResolver;
 
-use function count;
+use const PHP_VERSION_ID;
+
 use function strtoupper;
 use function time;
 
