@@ -53,6 +53,7 @@ final class ParamsResolverTest extends TestCase
             [DateTime::class, false],
             ['datetime', false],
             [DateTimeZone::class, false],
+            ['timezone', false],
             [DirectoryIterator::class, false],
             ['noexistent', false],
             [TestClass::class, false],
