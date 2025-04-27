@@ -1,5 +1,7 @@
 # pine3ree ParamsResolver
 
+[![Continuous Integration](https://github.com/pine3ree/pine3ree-params-resolver/actions/workflows/continuos-integration.yml/badge.svg)](https://github.com/pine3ree/pine3ree-params-resolver/actions/workflows/continuos-integration.yml)
+
 ParamsResolver is an utility service that uses reflection to resolve parameters
 for a given callable performing look-up in the following order and matched
 against class/interface/parameter names:
