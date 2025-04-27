@@ -9,7 +9,6 @@
 namespace pine3ree\test\Container;
 
 use DateTime;
-use const PHP_VERSION_ID;
 
 /**
  * Class InitClass
