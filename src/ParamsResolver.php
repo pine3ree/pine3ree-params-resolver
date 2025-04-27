@@ -67,34 +67,35 @@ class ParamsResolver implements ParamsResolverInterface
      * @return ReflectionParameter[]
      * @throws RuntimeException
      */
-    private function resolveReflectionParameters($callable): array
+    private function resolveReflectionParameters($callable): ?array
     {
-        // Check if closure or invokable objects
-        $is_object    = is_object($callable);
-        $is_closure   = $is_object && $callable instanceof Closure;
-        $is_invokable = $is_object && !$is_closure && method_exists($callable, '__invoke');
-
-        if ($is_invokable) {
-            // Try cached reflection parameters first, if any
-            $class = get_class($callable);
-            $cache_key = "{$class}::__invoke";
-            $rf_params = self::$rf_params[$cache_key] ?? null;
-            if ($rf_params === null) {
-                $rm = new ReflectionMethod($class, '__invoke');
-                self::$rf_params[$cache_key] = $rf_params = $rm->getParameters();
+        // Case: callable array specs [object/class, method]
+        if (is_array($callable)) {
+            $object = $callable[0] ?? null; // @phpstan-ignore nullCoalesce.offset
+            $method = $callable[1] ?? null; // @phpstan-ignore nullCoalesce.offset
+            if (empty($object)) {
+                throw new RuntimeException(
+                    "An empty object/class value was provided in element {0} of the callable array specs!"
+                );
             }
-        } elseif (is_array($callable)) {
-            $object = $callable[0];
-            $method = $callable[1];
             if (is_object($object)) {
                 $class = get_class($object);
-            } else {
+            } elseif (is_string($object)) {
                 $class = $object;
                 if (!class_exists($class)) {
                     throw new RuntimeException(
-                        "A class named `{$class}::{$method}` is not defined for given callable!"
+                        "A class named `{$class}` is not defined for given callable!"
                     );
                 }
+            } else {
+                throw new RuntimeException(
+                    "An invalid object/class value was provided in element {0} of the callable array specs!"
+                );
+            }
+            if (empty($method) || !is_string($method)) {
+                throw new RuntimeException(
+                    "An invalid method value was provided in element {1} of the callable array specs!"
+                );
             }
             // Try cached reflection parameters first, if any
             $cache_key = "{$class}::{$method}";
@@ -111,26 +112,50 @@ class ParamsResolver implements ParamsResolverInterface
                     self::$rf_params[$cache_key] = $rf_params = $rm->getParameters();
                 }
             }
-        } elseif (is_string($callable) && function_exists($callable)) {
+
+            return $rf_params;
+        }
+
+        if (is_object($callable)) {
+            // Case: anonymous/arrow function
+            if ($callable instanceof Closure) {
+                $rf = new ReflectionFunction($callable);
+                return $rf->getParameters();
+            }
+            // Case: invokable object
+            if (method_exists($callable, '__invoke')) {
+                /** @var object $callable Already ensured to be a an object by the conditional */
+                // Try cached reflection parameters first, if any
+                $class = get_class($callable);
+                $cache_key = "{$class}::__invoke";
+                $rf_params = self::$rf_params[$cache_key] ?? null;
+                if ($rf_params === null) {
+                    $rm = new ReflectionMethod($class, '__invoke');
+                    self::$rf_params[$cache_key] = $rf_params = $rm->getParameters();
+                }
+
+                return $rf_params;
+            }
+
+            throw new RuntimeException(
+                "The provided callable argument is an object but is not invokable!"
+            );
+        }
+
+        // Case: function
+        if (is_string($callable) && function_exists($callable)) {
             $rf_params = self::$rf_params[$callable] ?? null;
             if ($rf_params === null) {
                 $rf = new ReflectionFunction($callable);
                 self::$rf_params[$callable] = $rf_params = $rf->getParameters();
             }
-        } elseif ($is_closure) {
-            $rf = new ReflectionFunction($callable);
-            $rf_params = $rf->getParameters();
-        } else {
-            throw new RuntimeException(
-                "Cannot fetch a reflection method or function for given callable!"
-            );
+
+            return $rf_params;
         }
 
-        if (empty($rf_params)) {
-            return [];
-        }
-
-        return $rf_params;
+        throw new RuntimeException(
+            "Cannot fetch a reflection method or function for given callable!"
+        );
     }
 
     /**
@@ -138,7 +163,7 @@ class ParamsResolver implements ParamsResolverInterface
      * and values, default values, if any, or the NULL value for nullable parameters
      *
      * @param ReflectionParameter[] $rf_params
-     * @param array|null $resolvedParams
+     * @param array<mixed>|null $resolvedParams
      * @return array<mixed>
      * @throws RuntimeException
      */
