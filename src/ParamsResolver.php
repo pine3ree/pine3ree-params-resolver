@@ -27,9 +27,7 @@ use function interface_exists;
 use function is_array;
 use function is_object;
 use function is_string;
-use function json_encode;
 use function method_exists;
-use function sprintf;
 
 class ParamsResolver implements ParamsResolverInterface
 {
@@ -73,10 +71,9 @@ class ParamsResolver implements ParamsResolverInterface
             } else {
                 $class = $object;
                 if (!class_exists($class)) {
-                    throw new RuntimeException(sprintf(
-                        "A class named `{$class}::{$method}` is not defined for given callable %s !",
-                        json_encode($callable)
-                    ));
+                    throw new RuntimeException(
+                        "A class named `{$class}::{$method}` is not defined for given callable!"
+                    );
                 }
             }
             // Try cached reflection parameters first, if any
@@ -88,10 +85,9 @@ class ParamsResolver implements ParamsResolverInterface
                 } else {
                     $rc = new ReflectionClass($class);
                     if (!$rc->hasMethod($method)) {
-                        throw new RuntimeException(sprintf(
-                            "A method named `{$class}::{$method}` is not defined for given callable %s !",
-                            json_encode($callable)
-                        ));
+                        throw new RuntimeException(
+                            "A method named `{$class}::{$method}` is not defined for given callable!"
+                        );
                     }
                     $rm = $method === '__construct' ? $rc->getConstructor() : $rc->getMethod($method);
                 }
@@ -113,10 +109,10 @@ class ParamsResolver implements ParamsResolverInterface
             $rf = new ReflectionFunction($callable);
             $rf_params = $rf->getParameters();
         } else {
-            throw new RuntimeException(sprintf(
-                "Cannot fetch a reflection method or function for given callable %s !",
+            throw new RuntimeException(
+                "Cannot fetch a reflection method or function for given callable!",
                 json_encode($callable)
-            ));
+            );
         }
 
         /**
@@ -159,19 +155,17 @@ class ParamsResolver implements ParamsResolverInterface
                         try {
                             $args[] = new $rp_fqcn();
                         } catch (Throwable $ex) {
-                            throw new RuntimeException(sprintf(
+                            throw new RuntimeException(
                                 "Unable to instantiate an object for the parameter"
                                 . " with name `{$rp_name}` and class `{$rp_fqcn}`"
-                                . " for given callable %s!",
-                                json_encode($callable)
-                            ));
+                                . " for given callable!"
+                            );
                         }
                     } else {
-                        throw new RuntimeException(sprintf(
+                        throw new RuntimeException(
                             "Unable to resolve the dependency parameter with name `{$rp_name}`"
-                            . " for given callable %s!",
-                            json_encode($callable)
-                        ));
+                            . " for given callable!"
+                        );
                     }
                 } else {
                     /**
@@ -195,10 +189,9 @@ class ParamsResolver implements ParamsResolverInterface
                 // Finally use the NULL value, if the parameter is nullable
                 $args[] = null;
             } else {
-                throw new RuntimeException(sprintf(
-                    "Unable to resolve the parameter with name `{$rp_name}` for given callable %s!",
-                    json_encode($callable)
-                ));
+                throw new RuntimeException(
+                    "Unable to resolve the parameter with name `{$rp_name}` for given callable!",
+                );
             }
         }
 
