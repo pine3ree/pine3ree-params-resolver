@@ -52,11 +52,11 @@ final class ParamsResolverTest extends TestCase
             [DateTimeImmutable::class, true],
             [DateTime::class, false],
             ['time', false],
-            ['datetime', false],
+            ['datetime', true],
             [DateTimeZone::class, false],
             ['timezone', false],
             [DirectoryIterator::class, false],
-            ['noexistent', false],
+            ['nonexistent', false],
             [TestClass::class, false],
             [TestTrait::class, false],
             [TestInterface::class, false],
@@ -129,10 +129,10 @@ final class ParamsResolverTest extends TestCase
         $args = $this->resolver->resolve($callable);
     }
 
-    public function testThatResolvingNonExistentParameterRaisesExceptionIfNotDefaultValue(): void
+    public function testThatResolvingNonExistentParameterRaisesExceptionIfNotDefaultValueOrNullable(): void
     {
         // phpcs:ignore
-        $callable = function ($noexistent): void {};
+        $callable = function (string $nonexistent): void {};
 
         $this->expectException(RuntimeException::class);
         $args = $this->resolver->resolve($callable);
@@ -141,7 +141,7 @@ final class ParamsResolverTest extends TestCase
     public function testThatResolvingNonExistentParameterSucceedIfDefaultValue(): void
     {
         // phpcs:ignore
-        $callable = function ($noexistent = 'default'): void {};
+        $callable = function ($nonexistent = 'default'): void {};
 
         $args = $this->resolver->resolve($callable);
 
@@ -181,12 +181,19 @@ final class ParamsResolverTest extends TestCase
     {
         $constructor = [DateTimeImmutable::class, '__construct'];
 
-        $args = $this->resolver->resolve($constructor);
+        if (PHP_VERSION_ID < 80000) {
+            $this->expectException(RuntimeException::class);
+        }
+        $args = $this->resolver->resolve($constructor, [
+            'time' => 'now', // php-7.4
+        ]);
 
         self::assertEquals('now', $args[0]);
 
+        $time = time();
         $args = $this->resolver->resolve($constructor, [
-            'datetime' => $time = time(),
+            'time' => $time, // php-7.4
+            'datetime' => $time,
         ]);
 
         self::assertEquals($time, $args[0]);
@@ -225,8 +232,11 @@ final class ParamsResolverTest extends TestCase
 
     public function testFunction(): void
     {
+        $someString = 'SOME STRING';
+
         $args = $this->resolver->resolve('strtoupper', [
-            'string' => 'SOME STRING',
+            'str' => $someString, // php-7.4
+            'string' => $someString,
         ]);
 
         self::assertEquals('SOME STRING', $args[0]);
@@ -234,7 +244,7 @@ final class ParamsResolverTest extends TestCase
 
     public function testThatNonExistingFunctionRaisesException(): void
     {
-        $callable = 'nonexistent';
+        $callable = 'nonExistingFunction';
 
         $this->expectException(RuntimeException::class);
 
@@ -301,7 +311,11 @@ final class ParamsResolverTest extends TestCase
     {
         $constructor = [DateTimeImmutable::class, '__construct'];
 
-        $args = $this->resolver->resolve($constructor);
+        $time = time();
+        $args = $this->resolver->resolve($constructor, [
+            'time' => $time, // php-7.4
+            'timezone' => 'UTC', // php-7.4
+        ]);
 
         $key = DateTimeImmutable::class . '::__construct';
 

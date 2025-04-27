@@ -146,6 +146,9 @@ class ParamsResolver implements ParamsResolverInterface
                     } elseif ($rp->isDefaultValueAvailable()) {
                         // Dependency with a default value provided
                         $args[] = $rp->getDefaultValue();
+                    } elseif ($rp->allowsNull()) {
+                        // Nullable dependency
+                        $args[] = null;
                     } elseif (class_exists($rp_fqcn)) {
                         // Try instantating with argument-less constructor call
                         try {
@@ -181,8 +184,12 @@ class ParamsResolver implements ParamsResolverInterface
                 // Injected parameter resolved as container service-id
                 $args[] = $container->get($rp_name);
             } elseif ($rp->isDefaultValueAvailable()) {
-                // Finally try a default parameter, if available
+                // The try a default parameter, if available
                 $args[] = $rp->getDefaultValue();
+            } elseif ($rp->allowsNull()) {
+                // Finally try a NULL, if nullable parameter
+                var_dump($rp->getName());
+                $args[] = null;
             } else {
                 throw new RuntimeException(sprintf(
                     "Unable to resolve the parameter with name `{$rp_name}` for given callable %s!",
