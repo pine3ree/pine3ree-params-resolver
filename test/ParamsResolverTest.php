@@ -305,6 +305,37 @@ final class ParamsResolverTest extends TestCase
         self::assertEquals($str, $args[0]);
     }
 
+    /**
+     * @dataProvider provideInvalidArraySpecs
+     */
+    public function testThatInvalidSpecsArraysRaiseException(array $callable): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $this->resolver->resolve($callable);
+    }
+
+    public function provideInvalidArraySpecs(): array
+    {
+        return [
+            [[]],
+            [[null, 'someMethod']],
+            [['', 'someMethod']],
+            [[123, 'someMethod']],
+            [[Test::class]],
+            [[Test::class, null]],
+            [[Test::class, 123]],
+        ];
+    }
+
+    public function testThatNonInvokableObjectRaisesException(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $args = $this->resolver->resolve(new TestClass('test'));
+    }
+
+
     public function testThatNonInstatiatableClassRaisesException(): void
     {
         // phpcs:ignore
