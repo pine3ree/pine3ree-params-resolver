@@ -181,23 +181,31 @@ final class ParamsResolverTest extends TestCase
     {
         $constructor = [DateTimeImmutable::class, '__construct'];
 
+        $injectedParams = [];
         if (PHP_VERSION_ID < 80000) {
-            $this->expectException(RuntimeException::class);
+            $injectedParams = [
+                'time' => 'now', // php-7.4
+                'timezone' => 'UTC', // php-7.4
+            ];
         }
+
         $args = $this->resolver->resolve($constructor, [
             'time' => 'now', // php-7.4
+            'timezone' => 'UTC', // php-7.4
         ]);
 
         self::assertEquals('now', $args[0]);
 
         $time = time();
         $args = $this->resolver->resolve($constructor, [
-            'time' => $time, // php-7.4
             'datetime' => $time,
+            DateTimeZone::class => 'UTC',
+            'time' => $time, // php-7.4
+            'timezone' => 'UTC', // php-7.4
         ]);
 
         self::assertEquals($time, $args[0]);
-        self::assertNull($args[1]);
+        self::assertEquals('UTC', $args[1]);
     }
 
     public function testThatNonExistentMethodRaisesException(): void
