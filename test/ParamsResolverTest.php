@@ -149,6 +149,16 @@ final class ParamsResolverTest extends TestCase
         self::assertEquals('default', $args[0]);
     }
 
+    public function testThatResolvingNotFoundParameterSucceedIfNullable(): void
+    {
+        // phpcs:ignore
+        $callable = function (?string $nonexistent): void {};
+
+        $args = $this->resolver->resolve($callable);
+
+        self::assertNull($args[0]);
+    }
+
     public function testThatInjectedContainerIsUsed(): void
     {
         // phpcs:ignore
@@ -237,6 +247,16 @@ final class ParamsResolverTest extends TestCase
         $args = $this->resolver->resolve($callable);
 
         self::assertEquals($this->resolver->getContainer(), $args[0]);
+    }
+
+    public function testNullableDependency(): void
+    {
+        // phpcs:ignore
+        $callable = function (?DateTimeZone $tz): void {};
+
+        $args = $this->resolver->resolve($callable);
+
+        self::assertNull($args[0]);
     }
 
     public function testFunction(): void
