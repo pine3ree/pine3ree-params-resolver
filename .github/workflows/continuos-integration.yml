@@ -50,7 +50,7 @@ jobs:
 
       - name: Update Composer dependencies to lowest stable
         id: composer-update-lowest
-        if: ${{ matrix.composer-deps == 'lowest' && matrix.php-versions < '8.2.0' }}
+        if: ${{ matrix.composer-deps == 'lowest' && matrix.php-versions < '8.2' }}
         run: composer update ${{ env.COMPOSER_ARGS }} --prefer-lowest --prefer-stable
 
       - name: Update Composer dependencies to latest
@@ -76,6 +76,6 @@ jobs:
 
       - name: Coverage (clover)
         id: coverage-clover
-        if: ${{ matrix.php-versions < '8.2.0' }}
+        if: ${{ matrix.php-versions < '8.2' }}
         run: composer test-coverage
         
