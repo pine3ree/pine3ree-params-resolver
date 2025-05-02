@@ -41,7 +41,7 @@ class ParamsResolver implements ParamsResolverInterface
      *
      * @var array<string, ReflectionParameter[]>
      */
-    private static $rf_params = [];
+    private static $cache = [];
 
     public function __construct(ContainerInterface $container)
     {
@@ -99,7 +99,7 @@ class ParamsResolver implements ParamsResolverInterface
             }
             // Try cached reflection parameters first, if any
             $cache_key = "{$class}::{$method}";
-            $rf_params = self::$rf_params[$cache_key] ?? null;
+            $rf_params = self::$cache[$cache_key] ?? null;
             if ($rf_params === null) {
                 $rc = new ReflectionClass($class);
                 if (!$rc->hasMethod($method)) {
@@ -109,7 +109,7 @@ class ParamsResolver implements ParamsResolverInterface
                 }
                 $rm = $method === '__construct' ? $rc->getConstructor() : $rc->getMethod($method);
                 if ($rm instanceof ReflectionMethod) {
-                    self::$rf_params[$cache_key] = $rf_params = $rm->getParameters();
+                    self::$cache[$cache_key] = $rf_params = $rm->getParameters();
                 }
             }
 
@@ -128,10 +128,10 @@ class ParamsResolver implements ParamsResolverInterface
                 // Try cached reflection parameters first, if any
                 $class = get_class($callable);
                 $cache_key = "{$class}::__invoke";
-                $rf_params = self::$rf_params[$cache_key] ?? null;
+                $rf_params = self::$cache[$cache_key] ?? null;
                 if ($rf_params === null) {
                     $rm = new ReflectionMethod($class, '__invoke');
-                    self::$rf_params[$cache_key] = $rf_params = $rm->getParameters();
+                    self::$cache[$cache_key] = $rf_params = $rm->getParameters();
                 }
 
                 return $rf_params;
@@ -144,10 +144,10 @@ class ParamsResolver implements ParamsResolverInterface
 
         // Case: function
         if (is_string($callable) && function_exists($callable)) {
-            $rf_params = self::$rf_params[$callable] ?? null;
+            $rf_params = self::$cache[$callable] ?? null;
             if ($rf_params === null) {
                 $rf = new ReflectionFunction($callable);
-                self::$rf_params[$callable] = $rf_params = $rf->getParameters();
+                self::$cache[$callable] = $rf_params = $rf->getParameters();
             }
 
             return $rf_params;
@@ -259,6 +259,6 @@ class ParamsResolver implements ParamsResolverInterface
      */
     public static function getCachedReflectionParameters(string $key): ?array
     {
-        return self::$rf_params[$key] ?? null;
+        return self::$cache[$key] ?? null;
     }
 }
