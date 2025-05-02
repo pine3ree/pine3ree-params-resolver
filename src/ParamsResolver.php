@@ -60,6 +60,7 @@ class ParamsResolver implements ParamsResolverInterface
     }
 
     /**
+     * Try to resolve reflection parameters for given method/closure/invokable
      *
      * @param string|array{0: object|string, 1: string}|object $callable
      *      An [object/class, method] array expression, a function or an invokable
