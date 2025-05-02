@@ -1,0 +1,50 @@
+<?php
+
+class Test
+{
+    public function __construct(DateTimeInterface $datetime = null)
+    {
+        ;
+    }
+}
+
+class InvokableClass
+{
+    public function __invoke(int $number = 42)
+    {
+        ;
+    }
+}
+
+class StaticClass
+{
+    static function staticMethod(int $number = 24)
+    {
+        return 2 * $number;
+    }
+}
+
+$closure = function (int $number = 27) {
+    return $number;
+};
+
+$invokable = new InvokableClass();
+
+var_dump(is_callable($invokable));
+
+$rm = new ReflectionMethod($invokable, '__invoke');
+var_dump($rm);
+var_dump($rm->getParameters());
+
+$rm = new ReflectionMethod('StaticClass', 'staticMethod');
+var_dump($rm);
+var_dump($rm->getParameters());
+
+$rf = new ReflectionFunction($closure);
+var_dump($rf);
+var_dump($rf->getParameters());
+
+var_dump($rf == $rm);
+
+var_dump(function_exists('StaticClass::staticMethod'));
+
