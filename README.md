@@ -37,7 +37,7 @@ class MyDataMapper
 
 $paramsResolver = new ParamsResolver($container);
 
-$args = $paramsResolver->resolve(MyDataMapper::class, '__construct', [
+$args = $paramsResolver->resolve([MyDataMapper::class, '__construct'], [
     'config' => [
         //..
     ],
