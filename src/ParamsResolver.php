@@ -194,7 +194,6 @@ class ParamsResolver implements ParamsResolverInterface
     {
         $container = $this->container;
 
-        // Build the arguments for the provided ~callable~
         $args = [];
         /** @var ReflectionParameter $rp */
         foreach ($rf_params as $rp) {
