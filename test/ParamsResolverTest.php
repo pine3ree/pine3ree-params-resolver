@@ -405,8 +405,8 @@ final class ParamsResolverTest extends TestCase
         $rp->setAccessible(true);
         $cache = $rp->getValue();
 
-        $rf_params = $cache[$key] ?? [];
+        $rp_params = $cache[$key] ?? [];
 
-        self::assertCount(2, $rf_params);
+        self::assertCount(2, $rp_params);
     }
 }

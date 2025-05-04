@@ -66,13 +66,13 @@ class ParamsResolver implements ParamsResolverInterface
      */
     public function resolve($callable, ?array $resolvedParams = null): array
     {
-        $rf_params = $this->resolveReflectionParameters($callable);
+        $rp_params = $this->resolveReflectionParameters($callable);
 
-        if (empty($rf_params)) {
+        if (empty($rp_params)) {
             return [];
         }
 
-        return $this->resolveArguments($rf_params, $resolvedParams);
+        return $this->resolveArguments($rp_params, $resolvedParams);
     }
 
     /**
@@ -184,19 +184,19 @@ class ParamsResolver implements ParamsResolverInterface
      * Resolve the argument values using injected params, the container dependencies
      * and values, default values, if any, or the NULL value for nullable parameters
      *
-     * @param ReflectionParameter[] $rf_params
+     * @param ReflectionParameter[] $rp_params
      * @param array<mixed>|null $resolvedParams Known parameter values indexed by
      *      class/interface name, container service-name or parameter name
      * @return array<mixed>
      * @throws RuntimeException
      */
-    private function resolveArguments(array $rf_params, ?array $resolvedParams = null): array
+    private function resolveArguments(array $rp_params, ?array $resolvedParams = null): array
     {
         $container = $this->container;
 
         $args = [];
         /** @var ReflectionParameter $rp */
-        foreach ($rf_params as $rp) {
+        foreach ($rp_params as $rp) {
             $rp_name = $rp->getName();
             $rp_type = $rp->getType();
             if ($rp_type instanceof ReflectionNamedType && !$rp_type->isBuiltin()) {
