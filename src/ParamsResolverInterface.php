@@ -23,17 +23,14 @@ use Throwable;
 interface ParamsResolverInterface
 {
     /**
-     * Resolve a function/method/callable-object's arguments using provided resolved
-     * params or retrieving them from the container
+     * Resolve a function/method/invokable-object's arguments values using provided
+     * resolved params or retrieving them from the container
      *
-     * The resolver usually composes a container itself, but this can be overriden
-     * by using an alternative container provided as argument
-     *
-     * @param string|array{0: object|string, 1: string}|object $callable
-     *      An [object/class, method] array expression, a function or an invokable
+     * @param string|array{0: object|class-string, 1: string}|object $callable
+     *      An [object/class-string, method] array expression, a function or an invokable
      *      object. Use [fqcn, '__construct'] for class constructors.
-     * @param array<string, mixed> $resolvedParams Optionally injected resolved params
-     *      indexed by FQCN/FQIN/container-service-ID
+     * @param array<string, mixed> $resolvedParams Optional resolved parameter values
+     *      indexed by FQCN/FQIN/container-service-name or by parameter name
      * @return array<mixed>
      * @throws Throwable
      */

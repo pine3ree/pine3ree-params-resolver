@@ -42,17 +42,6 @@ class ParamsResolver implements ParamsResolverInterface
         $this->container = $container;
     }
 
-    /**
-     * Try to resolve parameters and argument values
-     *
-     * @param string|array{0: object|class-string, 1: string}|object $callable
-     *      An [object/class, method] array expression, a function or an invokable
-     *      object. Use [fqcn, '__construct'] for class constructors.
-     * @param array<mixed>|null $resolvedParams Known parameter values indexed by
-     *      class/interface name, container service-name or parameter name
-     * @return array<mixed>
-     * @throws RuntimeException
-     */
     public function resolve($callable, ?array $resolvedParams = null): array
     {
         $rp_params = $this->resolveReflectionParameters($callable);
