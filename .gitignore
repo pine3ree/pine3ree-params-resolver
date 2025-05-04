@@ -18,7 +18,7 @@
 .php_cs.cache
 .php-cs.cache
 .phpcs.cache
-.phpcs.cache
+.phpcs-cache
 
 .php-cs-fixer.cache
 .php-cs-fixer.php
