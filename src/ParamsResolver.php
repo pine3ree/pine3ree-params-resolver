@@ -68,7 +68,7 @@ class ParamsResolver implements ParamsResolverInterface
      * @return ReflectionParameter[]
      * @throws RuntimeException
      */
-    private function resolveReflectionParameters($callable): ?array
+    private function resolveReflectionParameters($callable): array
     {
         // Case: callable array specs [object/class, method]
         if (is_array($callable)) {
@@ -100,15 +100,15 @@ class ParamsResolver implements ParamsResolverInterface
             }
 
             // Try cached reflection parameters first, if any
-            $cmkey = "{$class}::{$method}";
-            $rm_params = self::$cache[$cmkey] ?? null;
+            $cm_key = "{$class}::{$method}";
+            $rm_params = self::$cache[$cm_key] ?? null;
             if ($rm_params === null) {
                 $rc = new ReflectionClass($class);
                 if ($rc->hasMethod($method)) {
                     $rm = $method === '__construct' ? $rc->getConstructor() : $rc->getMethod($method);
                     if ($rm instanceof ReflectionMethod) {
                         $rm_params = $rm->getParameters();
-                        self::$cache[$cmkey] = $rm_params;
+                        self::$cache[$cm_key] = $rm_params;
                         return $rm_params;
                     }
                 }
@@ -131,12 +131,12 @@ class ParamsResolver implements ParamsResolverInterface
                 /** @var object $callable Already ensured to be a an object by the conditional */
                 // Try cached reflection parameters first, if any
                 $class = get_class($callable);
-                $cmkey = "{$class}::{$method}";
-                $rm_params = self::$cache[$cmkey] ?? null;
+                $cm_key = "{$class}::{$method}";
+                $rm_params = self::$cache[$cm_key] ?? null;
                 if ($rm_params === null) {
                     $rm = new ReflectionMethod($class, $method);
                     $rm_params = $rm->getParameters();
-                    self::$cache[$cmkey] = $rm_params;
+                    self::$cache[$cm_key] = $rm_params;
                 }
 
                 return $rm_params;
