@@ -29,6 +29,11 @@ use function is_object;
 use function is_string;
 use function method_exists;
 
+/**
+ * ParamsResolver try to resolve parameters and related argument values for object/class-methods,
+ * functions, anonymous-functions and invokable-objects using provided values or
+ * using the composed container
+ */
 class ParamsResolver implements ParamsResolverInterface
 {
     /**
@@ -48,6 +53,17 @@ class ParamsResolver implements ParamsResolverInterface
         $this->container = $container;
     }
 
+    /**
+     * Try to resolve parameters and argument values
+     *
+     * @param string|array{0: object|string, 1: string}|object $callable
+     *      An [object/class, method] array expression, a function or an invokable
+     *      object. Use [fqcn, '__construct'] for class constructors.
+     * @param array<mixed>|null $resolvedParams Known parameter values indexed by
+     *      class/interface name, container service-name or parameter name
+     * @return array<mixed>
+     * @throws RuntimeException
+     */
     public function resolve($callable, ?array $resolvedParams = null): array
     {
         $rf_params = $this->resolveReflectionParameters($callable);
@@ -169,7 +185,8 @@ class ParamsResolver implements ParamsResolverInterface
      * and values, default values, if any, or the NULL value for nullable parameters
      *
      * @param ReflectionParameter[] $rf_params
-     * @param array<mixed>|null $resolvedParams
+     * @param array<mixed>|null $resolvedParams Known parameter values indexed by
+     *      class/interface name, container service-name or parameter name
      * @return array<mixed>
      * @throws RuntimeException
      */
