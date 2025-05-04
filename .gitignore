@@ -31,3 +31,4 @@
 error_log
 php-error.log
 *.bak
+*test*.cache
