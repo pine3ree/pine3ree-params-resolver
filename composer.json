@@ -30,8 +30,9 @@
         "minimum-stability": "dev"
     },
     "require": {
-        "psr/container": "^1.1.2 || ^2.0",
-        "php": "^7.4 || ^8.0"
+        "php": "^7.4 || ^8.0",
+        "pine3ree/pine3ree-reflection-helper": "^0.5.0",
+        "psr/container": "^1.1.2 || ^2.0"
     },
     "require-dev": {
         "phpspec/prophecy-phpunit": "^1.1 || ^2.0",

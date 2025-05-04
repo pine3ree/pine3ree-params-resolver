@@ -9,16 +9,13 @@ declare(strict_types=1);
 
 namespace pine3ree\Container;
 
-use Closure;
 use Psr\Container\ContainerInterface;
-use ReflectionClass;
-use ReflectionFunction;
-use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 use RuntimeException;
 use Throwable;
 use pine3ree\Container\ParamsResolverInterface;
+use pine3ree\Helper\Reflection;
 
 use function class_exists;
 use function function_exists;
@@ -27,7 +24,6 @@ use function interface_exists;
 use function is_array;
 use function is_object;
 use function is_string;
-use function method_exists;
 
 /**
  * ParamsResolver try to resolve parameters and related argument values for object/class-methods,
@@ -41,13 +37,6 @@ class ParamsResolver implements ParamsResolverInterface
      */
     private ContainerInterface $container;
 
-    /**
-     * A cache of resolved reflection parameters indexed by function/class::method name
-     *
-     * @var array<string, ReflectionParameter[]>
-     */
-    private static $cache = [];
-
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
@@ -56,7 +45,7 @@ class ParamsResolver implements ParamsResolverInterface
     /**
      * Try to resolve parameters and argument values
      *
-     * @param string|array{0: object|string, 1: string}|object $callable
+     * @param string|array{0: object|class-string, 1: string}|object $callable
      *      An [object/class, method] array expression, a function or an invokable
      *      object. Use [fqcn, '__construct'] for class constructors.
      * @param array<mixed>|null $resolvedParams Known parameter values indexed by
@@ -78,7 +67,7 @@ class ParamsResolver implements ParamsResolverInterface
     /**
      * Try to resolve reflection parameters for given method/closure/invokable
      *
-     * @param string|array{0: object|string, 1: string}|object $callable
+     * @param string|array{0: object|class-string, 1: string}|object $callable
      *      An [object/class, method] array expression, a function or an invokable
      *      object. Use [fqcn, '__construct'] for class constructors.
      * @return ReflectionParameter[]
@@ -86,97 +75,54 @@ class ParamsResolver implements ParamsResolverInterface
      */
     private function resolveReflectionParameters($callable): array
     {
-        // Case: callable array specs [object/class, method]
+        // Case: callable array specs [object|class-string, method]
         if (is_array($callable)) {
             $object = $callable[0] ?? null; // @phpstan-ignore-line
             $method = $callable[1] ?? null; // @phpstan-ignore-line
             if (empty($method) || !is_string($method)) {
                 throw new RuntimeException(
-                    "An invalid method value was provided in element {1} of the callable array specs!"
+                    "An invalid 'method' value was provided in element {1} of the callable array specs!"
                 );
             }
-            if (empty($object)) {
+            if (empty($object) || !(is_object($object) || is_string($object))) {
                 throw new RuntimeException(
-                    "An empty object/class value was provided in element {0} of the callable array specs!"
+                    "An empty 'object/class-string' value was provided in element {0} of the callable array specs!"
                 );
             }
-            if (is_object($object)) {
-                $class = get_class($object);
-            } elseif (is_string($object)) {
-                $class = $object;
-                if (!class_exists($class)) {
-                    throw new RuntimeException(
-                        "A class named `{$class}` is not defined for given callable!"
-                    );
-                }
-            } else {
-                throw new RuntimeException(
-                    "An invalid object/class value was provided in element {0} of the callable array specs!"
-                );
-            }
-
-            // Try cached reflection parameters first, if any
-            $cm_key = "{$class}::{$method}";
-            $rm_params = self::$cache[$cm_key] ?? null;
+            $rm_params = Reflection::getParametersForMethod($object, $method, true);
             if ($rm_params === null) {
-                $rc = new ReflectionClass($class);
-                if ($rc->hasMethod($method)) {
-                    $rm = $method === '__construct' ? $rc->getConstructor() : $rc->getMethod($method);
-                    if ($rm instanceof ReflectionMethod) {
-                        $rm_params = $rm->getParameters();
-                        self::$cache[$cm_key] = $rm_params;
-                        return $rm_params;
-                    }
-                }
+                $class = is_object($object) ? get_class($object) : $object;
                 throw new RuntimeException(
-                    "A method named `{$class}::{$method}` is not defined for given callable!"
+                    "Unable to resolve reflection parameters for method `{$class}::{$method}`"
                 );
             }
-
             return $rm_params;
         }
 
+        // Case: anonymous/arrow function or invokable object
         if (is_object($callable)) {
-            // Case: anonymous/arrow function
-            if ($callable instanceof Closure) {
-                $rf = new ReflectionFunction($callable);
-                return $rf->getParameters();
+            $rm_params = Reflection::getParametersForInvokable($callable);
+            if ($rm_params === null) {
+                throw new RuntimeException(
+                    "The provided callable argument is an object but is not invokable!"
+                );
             }
-            // Case: invokable object
-            if (method_exists($callable, $method = '__invoke')) {
-                /** @var object $callable Already ensured to be a an object by the conditional */
-                // Try cached reflection parameters first, if any
-                $class = get_class($callable);
-                $cm_key = "{$class}::{$method}";
-                $rm_params = self::$cache[$cm_key] ?? null;
-                if ($rm_params === null) {
-                    $rm = new ReflectionMethod($class, $method);
-                    $rm_params = $rm->getParameters();
-                    self::$cache[$cm_key] = $rm_params;
-                }
-
-                return $rm_params;
-            }
-
-            throw new RuntimeException(
-                "The provided callable argument is an object but is not invokable!"
-            );
+            return $rm_params;
         }
 
         // Case: function
         if (is_string($callable) && function_exists($callable)) {
-            $rf_params = self::$cache[$callable] ?? null;
+            $rf_params = Reflection::getParametersForFunction($callable, false);
             if ($rf_params === null) {
-                $rf = new ReflectionFunction($callable);
-                $rf_params = $rf->getParameters();
-                self::$cache[$callable] = $rf_params;
+                throw new RuntimeException(
+                    "Unable to resolve reflection parameters for function `{$callable}`!"
+                );
             }
-
             return $rf_params;
         }
 
         throw new RuntimeException(
-            "Cannot fetch a reflection method or function for given callable!"
+            "Unable to resolve reflection parameters for given callable!"
         );
     }
 
