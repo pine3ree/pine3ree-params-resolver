@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @package pine3ree-container-params-resolver
+ * @package pine3ree-params-resolver
  * @author  pine3ree https://github.com/pine3ree
  */
 
