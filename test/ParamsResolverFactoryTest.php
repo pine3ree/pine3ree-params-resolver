@@ -6,6 +6,7 @@ namespace pine3ree\test\Container;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use ReflectionProperty;
 use pine3ree\Container\ParamsResolver;
 use pine3ree\Container\ParamsResolverFactory;
 use pine3ree\Container\ParamsResolverInterface;
@@ -38,7 +39,11 @@ final class ParamsResolverFactoryTest extends TestCase
     {
         $resolver = ($this->factory)($this->container);
 
+        $rp = new ReflectionProperty(ParamsResolver::class, 'container');
+        $rp->setAccessible(true);
+        $container = $rp->getValue($resolver);
+
         self::assertInstanceOf(ParamsResolver::class, $resolver);
-        self::assertSame($this->container, $resolver->getContainer());
+        self::assertSame($this->container, $container);
     }
 }

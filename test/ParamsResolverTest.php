@@ -11,6 +11,7 @@ use DateTimeZone;
 use DirectoryIterator;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
+use ReflectionProperty;
 use RuntimeException;
 use pine3ree\Container\ParamsResolver;
 
@@ -226,7 +227,11 @@ final class ParamsResolverTest extends TestCase
 
         $args = $this->resolver->resolve($callable);
 
-        self::assertEquals($this->resolver->getContainer(), $args[0]);
+        $rp = new ReflectionProperty(ParamsResolver::class, 'container');
+        $rp->setAccessible(true);
+        $container = $rp->getValue($this->resolver);
+
+        self::assertEquals($container, $args[0]);
     }
 
     public function testNullableDependency(): void
@@ -396,7 +401,11 @@ final class ParamsResolverTest extends TestCase
 
         $key = DateTimeImmutable::class . '::__construct';
 
-        $rf_params = ParamsResolver::getCachedReflectionParameters($key);
+        $rp = new ReflectionProperty(ParamsResolver::class, 'cache');
+        $rp->setAccessible(true);
+        $cache = $rp->getValue();
+
+        $rf_params = $cache[$key] ?? [];
 
         self::assertCount(2, $rf_params);
     }

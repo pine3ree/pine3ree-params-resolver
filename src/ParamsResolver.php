@@ -263,24 +263,4 @@ class ParamsResolver implements ParamsResolverInterface
 
         return $args;
     }
-
-    /**
-     * @internal Used internally by unit tests
-     */
-    public function getContainer(): ContainerInterface
-    {
-        return $this->container;
-    }
-
-    /**
-     * Get the cached reflection parameters for given callable key, if any.
-     *
-     * @internal Used internally by unit tests and for debug
-     *
-     * @return ReflectionParameter[]|null
-     */
-    public static function getCachedReflectionParameters(string $key): ?array
-    {
-        return self::$cache[$key] ?? null;
-    }
 }
