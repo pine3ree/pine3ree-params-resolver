@@ -256,7 +256,7 @@ class ParamsResolver implements ParamsResolverInterface
                 $args[] = null;
             } else {
                 throw new RuntimeException(
-                    "Unable to resolve the parameter with name `{$rp_name}` for given callable!",
+                    "Unable to resolve the parameter `{$rp_name}` for given callable!",
                 );
             }
         }
