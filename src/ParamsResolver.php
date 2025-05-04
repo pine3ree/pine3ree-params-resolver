@@ -265,7 +265,7 @@ class ParamsResolver implements ParamsResolverInterface
     }
 
     /**
-     * @internal Used by internally by unit tests
+     * @internal Used internally by unit tests
      */
     public function getContainer(): ContainerInterface
     {
@@ -275,7 +275,7 @@ class ParamsResolver implements ParamsResolverInterface
     /**
      * Get the cached reflection parameters for given callable key, if any.
      *
-     * @internal Used for debug
+     * @internal Used internally by unit tests and for debug
      *
      * @return ReflectionParameter[]|null
      */
