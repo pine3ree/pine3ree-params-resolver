@@ -98,23 +98,26 @@ class ParamsResolver implements ParamsResolverInterface
                     "An invalid object/class value was provided in element {0} of the callable array specs!"
                 );
             }
+
             // Try cached reflection parameters first, if any
-            $cache_key = "{$class}::{$method}";
-            $rf_params = self::$cache[$cache_key] ?? null;
-            if ($rf_params === null) {
+            $cmkey = "{$class}::{$method}";
+            $rm_params = self::$cache[$cmkey] ?? null;
+            if ($rm_params === null) {
                 $rc = new ReflectionClass($class);
-                if (!$rc->hasMethod($method)) {
-                    throw new RuntimeException(
-                        "A method named `{$class}::{$method}` is not defined for given callable!"
-                    );
+                if ($rc->hasMethod($method)) {
+                    $rm = $method === '__construct' ? $rc->getConstructor() : $rc->getMethod($method);
+                    if ($rm instanceof ReflectionMethod) {
+                        $rm_params = $rm->getParameters();
+                        self::$cache[$cmkey] = $rm_params;
+                        return $rm_params;
+                    }
                 }
-                $rm = $method === '__construct' ? $rc->getConstructor() : $rc->getMethod($method);
-                if ($rm instanceof ReflectionMethod) {
-                    self::$cache[$cache_key] = $rf_params = $rm->getParameters();
-                }
+                throw new RuntimeException(
+                    "A method named `{$class}::{$method}` is not defined for given callable!"
+                );
             }
 
-            return $rf_params;
+            return $rm_params;
         }
 
         if (is_object($callable)) {
@@ -124,18 +127,19 @@ class ParamsResolver implements ParamsResolverInterface
                 return $rf->getParameters();
             }
             // Case: invokable object
-            if (method_exists($callable, '__invoke')) {
+            if (method_exists($callable, $method = '__invoke')) {
                 /** @var object $callable Already ensured to be a an object by the conditional */
                 // Try cached reflection parameters first, if any
                 $class = get_class($callable);
-                $cache_key = "{$class}::__invoke";
-                $rf_params = self::$cache[$cache_key] ?? null;
-                if ($rf_params === null) {
-                    $rm = new ReflectionMethod($class, '__invoke');
-                    self::$cache[$cache_key] = $rf_params = $rm->getParameters();
+                $cmkey = "{$class}::{$method}";
+                $rm_params = self::$cache[$cmkey] ?? null;
+                if ($rm_params === null) {
+                    $rm = new ReflectionMethod($class, $method);
+                    $rm_params = $rm->getParameters();
+                    self::$cache[$cmkey] = $rm_params;
                 }
 
-                return $rf_params;
+                return $rm_params;
             }
 
             throw new RuntimeException(
@@ -148,7 +152,8 @@ class ParamsResolver implements ParamsResolverInterface
             $rf_params = self::$cache[$callable] ?? null;
             if ($rf_params === null) {
                 $rf = new ReflectionFunction($callable);
-                self::$cache[$callable] = $rf_params = $rf->getParameters();
+                $rf_params = $rf->getParameters();
+                self::$cache[$callable] = $rf_params;
             }
 
             return $rf_params;
