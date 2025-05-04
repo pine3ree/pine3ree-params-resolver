@@ -227,13 +227,12 @@ class ParamsResolver implements ParamsResolverInterface
                         } catch (Throwable $ex) {
                             throw new RuntimeException(
                                 "Unable to instantiate an object for the parameter"
-                                . " with name `{$rp_name}` and class `{$rp_fqcn}`"
-                                . " for given callable!"
+                                . " `{$rp_name}` of type `{$rp_fqcn}` for given callable!"
                             );
                         }
                     } else {
                         throw new RuntimeException(
-                            "Unable to resolve the dependency parameter with name `{$rp_name}`"
+                            "Unable to resolve the dependency parameter `{$rp_name}`"
                             . " for given callable!"
                         );
                     }
