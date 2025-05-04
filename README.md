@@ -12,7 +12,7 @@ against class/interface/parameter names:
 
 Example:
 
-In the following example the dependency $db is fetched from the container, the
+In the following example the `$db` dependency is fetched from the container, the
 `$config` parameter is provided and the `$options` parameter receives the default
 empty array value.
 
@@ -32,7 +32,7 @@ class MyDataMapper
 }
 
 //...
-// include the container container
+// include the container building code/file
 //...
 
 $paramsResolver = new ParamsResolver($container);
