@@ -5,6 +5,7 @@ parameters:
     fileExtensions:
         - php
     reportUnmatchedIgnoredErrors: false
+    treatPhpDocTypesAsCertain: false
     ignoreErrors:
         - '#Parameter \#1 \$object[a-z_]* of function method_exists expects object\|string, array\<int, object\|string\>\|object\|string given#'
         - '#Parameter \#1 \$function of class ReflectionFunction constructor expects Closure\|string, object\|string given#'
