@@ -192,77 +192,97 @@ class ParamsResolver implements ParamsResolverInterface
      */
     private function resolveArguments(array $rf_params, ?array $resolvedParams = null): array
     {
-        $container = $this->container;
-
-        // Build the arguments for the provided ~callable~
         $args = [];
         /** @var ReflectionParameter $rp */
         foreach ($rf_params as $rp) {
             $rp_name = $rp->getName();
             $rp_type = $rp->getType();
             if ($rp_type instanceof ReflectionNamedType && !$rp_type->isBuiltin()) {
-                $rp_fqcn = $rp_type->getName();
-                // fqcn/fqin type-hinted arguments
-                if (interface_exists($rp_fqcn) || class_exists($rp_fqcn)) {
-                    if (isset($resolvedParams[$rp_fqcn])) {
-                        // Try injected/resolved params first
-                        $args[] = $resolvedParams[$rp_fqcn];
-                    } elseif ($rp_fqcn === ContainerInterface::class || $rp_fqcn === get_class($container)) {
-                        // A container should not be a type-hinted dependency (service-locator anti-pattern),
-                        // but another dependency resolver might use it
-                        $args[] = $container;
-                    } elseif ($container->has($rp_fqcn)) {
-                        // Parameter resolved by the container
-                        $args[] = $container->get($rp_fqcn);
-                    } elseif ($rp->isDefaultValueAvailable()) {
-                        // Dependency with a default value provided
-                        $args[] = $rp->getDefaultValue();
-                    } elseif ($rp->allowsNull()) {
-                        // Nullable dependency
-                        $args[] = null;
-                    } elseif (class_exists($rp_fqcn)) {
-                        // Try instantating with argument-less constructor call
-                        try {
-                            $args[] = new $rp_fqcn();
-                        } catch (Throwable $ex) {
-                            throw new RuntimeException(
-                                "Unable to instantiate an object for the parameter"
-                                . " with name `{$rp_name}` and class `{$rp_fqcn}`"
-                                . " for given callable!"
-                            );
-                        }
-                    } else {
-                        throw new RuntimeException(
-                            "Unable to resolve the dependency parameter with name `{$rp_name}`"
-                            . " for given callable!"
-                        );
-                    }
-                } else {
-                    throw new RuntimeException(
-                        "`{$rp_fqcn}` is neither a valid interface nor a class name"
-                        . " for given dependency named `{$rp_name}`!",
-                    );
-                }
-            } elseif (isset($resolvedParams[$rp_name])) {
-                // Injected parameter matched by name
-                $args[] = $resolvedParams[$rp_name];
-            } elseif ($container->has($rp_name)) {
-                // Injected parameter resolved as container service-id
-                $args[] = $container->get($rp_name);
-            } elseif ($rp->isDefaultValueAvailable()) {
-                // The use a default parameter, if available
-                $args[] = $rp->getDefaultValue();
-            } elseif ($rp->allowsNull()) {
-                // Finally use the NULL value, if the parameter is nullable
-                $args[] = null;
+                $args[] = $this->resolveClassArgument($rp, $rp_name, $rp_type->getName(), $resolvedParams);
             } else {
-                throw new RuntimeException(
-                    "Unable to resolve the parameter with name `{$rp_name}` for given callable!",
-                );
+                $args[] = $this->resolveArgument($rp, $rp_name, $resolvedParams);
             }
         }
 
         return $args;
+    }
+
+    /**
+     * Resolve the argument value for parameter of type other than builtiin
+     *
+     * @param ReflectionParameter $rp
+     * @param string $rp_name The parameter name
+     * @param string $rp_fqcn The parameter fully-qualified class-string, if any
+     * @param array<mixed>|null $resolvedParams
+     * @return mixed
+     */
+    private function resolveClassArgument(ReflectionParameter $rp, string $rp_name, string $rp_fqcn, ?array $resolvedParams = null)
+    {
+        if (!interface_exists($rp_fqcn) && !class_exists($rp_fqcn)) {
+            throw new RuntimeException(
+                "`{$rp_fqcn}` is neither a valid interface nor a class name"
+                . " for given dependency named `{$rp_name}`!",
+            );
+        }
+
+        try {
+            return $this->resolveArgument($rp, $rp_fqcn, $resolvedParams);
+        } catch (Throwable $ex) {
+            if ($rp_fqcn === ContainerInterface::class || $rp_fqcn === get_class($this->container)) {
+                return $this->container;
+            }
+            if (!class_exists($rp_fqcn)) {
+                throw new RuntimeException(
+                    "Unable to resolve the dependency parameter `{$rp_name}`"
+                    . " of class `{$rp_fqcn}` for given callable!"
+                );
+            }
+            // Try instantating with argument-less constructor call
+            try {
+                return new $rp_fqcn();
+            } catch (Throwable $ex) {
+                throw new RuntimeException(
+                    "Unable to instantiate an object of class `{$rp_fqcn}` for"
+                    . " the parameter `{$rp_name}` of given callable!"
+                );
+            }
+        }
+    }
+
+    /**
+     * Resolve a parameter value using a) resolved-provided-values; b) container
+     * service, c) default-value, d) NULL value if nullable
+     *
+     * @param ReflectionParameter $rp
+     * @param string $rp_name_fqcn The parameter name or class-string
+     * @param array<mixed>|null $resolvedParams
+     * @return mixed
+     */
+    private function resolveArgument(ReflectionParameter $rp, string $rp_name_fqcn, ?array $resolvedParams = null)
+    {
+        // Injected parameter matched by class(iface)-name/parameter-name
+        if (isset($resolvedParams[$rp_name_fqcn])) {
+            return $resolvedParams[$rp_name_fqcn];
+        }
+
+        // Injected parameter resolved as container service-id (fqcn/fqin/name)
+        if ($this->container->has($rp_name_fqcn)) {
+            return $this->container->get($rp_name_fqcn);
+        }
+
+        // The use the default provided parameter, if available
+        if ($rp->isDefaultValueAvailable()) {
+            return $rp->getDefaultValue();
+        }
+
+        // Finally use the NULL value, if the parameter is nullable
+        if ($rp->allowsNull()) {
+            return null;
+        }
+
+        throw new RuntimeException(
+            "Unable to resolve the parameter `{$rp_name_fqcn}` for given callable!"
+        );
     }
 
     /**
