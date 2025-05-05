@@ -90,6 +90,11 @@ class ParamsResolver implements ParamsResolverInterface
         } elseif (is_string($callable) && function_exists($callable)) {
             // Case 3: function
             $rp_params = Reflection::getParametersForFunction($callable, false);
+        } else {
+            throw new RuntimeException(
+                "Invalid 'callable' argument provided: must be a method array expression,"
+                . " an invokable object or a function name!"
+            );
         }
 
         if (is_array($rp_params)) {
