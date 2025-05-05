@@ -54,7 +54,12 @@ class ParamsResolver implements ParamsResolverInterface
     }
 
     /**
-     * Try to resolve reflection parameters for given method/closure/invokable
+     * Try to resolve reflection parameters for given method/function/closure/invokable
+     *
+     * Possible/valid scenarios:
+     * - Case 1: callable array specs [object|class-string, method]
+     * - Case 2: anonymous/arrow function or invokable object
+     * - Case 3: function
      *
      * @param string|array{0: object|class-string, 1: string}|object $callable
      *      An [object/class-string, method] array expression, a function or an invokable
@@ -64,7 +69,6 @@ class ParamsResolver implements ParamsResolverInterface
      */
     private function resolveReflectionParameters($callable): array
     {
-        // Case: callable array specs [object|class-string, method]
         if (is_array($callable)) {
             $object = $callable[0] ?? null; // @phpstan-ignore-line
             $method = $callable[1] ?? null; // @phpstan-ignore-line
@@ -78,36 +82,18 @@ class ParamsResolver implements ParamsResolverInterface
                     "An empty or invalid 'object|class-string' value was provided in element {0} of the callable array specs!"
                 );
             }
-            $rm_params = Reflection::getParametersForMethod($object, $method, true);
-            if ($rm_params === null) {
-                $class = is_object($object) ? get_class($object) : $object;
-                throw new RuntimeException(
-                    "Unable to resolve reflection parameters for method `{$class}::{$method}`"
-                );
-            }
-            return $rm_params;
+            // Case 1: callable array specs [object|class-string, method]
+            $rp_params = Reflection::getParametersForMethod($object, $method, true);
+        } elseif (is_object($callable)) {
+            // Case 2: anonymous/arrow function or invokable object
+            $rp_params = Reflection::getParametersForInvokable($callable);
+        } elseif (is_string($callable) && function_exists($callable)) {
+            // Case 3: function
+            $rp_params = Reflection::getParametersForFunction($callable, false);
         }
 
-        // Case: anonymous/arrow function or invokable object
-        if (is_object($callable)) {
-            $rm_params = Reflection::getParametersForInvokable($callable);
-            if ($rm_params === null) {
-                throw new RuntimeException(
-                    "The provided callable argument is an object but is not invokable!"
-                );
-            }
-            return $rm_params;
-        }
-
-        // Case: function
-        if (is_string($callable) && function_exists($callable)) {
-            $rf_params = Reflection::getParametersForFunction($callable, false);
-            if ($rf_params === null) {
-                throw new RuntimeException(
-                    "Unable to resolve reflection parameters for function `{$callable}`!"
-                );
-            }
-            return $rf_params;
+        if (is_array($rp_params)) {
+            return $rp_params;
         }
 
         throw new RuntimeException(
