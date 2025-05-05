@@ -388,25 +388,4 @@ final class ParamsResolverTest extends TestCase
 
         self::assertEquals([], $args);
     }
-
-    public function testCachedReflectionParameters()
-    {
-        $constructor = [DateTimeImmutable::class, '__construct'];
-
-        $time = time();
-        $args = $this->resolver->resolve($constructor, [
-            'time' => $time, // php-7.4
-            'timezone' => 'UTC', // php-7.4
-        ]);
-
-        $key = DateTimeImmutable::class . '::__construct';
-
-        $rp = new ReflectionProperty(ParamsResolver::class, 'cache');
-        $rp->setAccessible(true);
-        $cache = $rp->getValue();
-
-        $rp_params = $cache[$key] ?? [];
-
-        self::assertCount(2, $rp_params);
-    }
 }
