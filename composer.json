@@ -25,10 +25,10 @@
     },
     "config": {
         "sort-packages": true,
-        "optimize-autoloader": true,
-        "prefer-stable": true,
-        "minimum-stability": "dev"
+        "optimize-autoloader": true
     },
+    "prefer-stable": true,
+    "minimum-stability": "dev",
     "require": {
         "php": "^7.4 || ^8.0",
         "pine3ree/pine3ree-reflection-helper": "^1.0",
